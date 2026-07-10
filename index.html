@@ -582,7 +582,15 @@
       padding: 0;
     }
     .lightbox::backdrop { background: rgba(5, 7, 8, 0.88); backdrop-filter: blur(6px); }
-    .lightbox img { width: 100%; max-height: 76vh; object-fit: contain; background: #0a0c0d; }
+    .lightbox img {
+      width: 100%;
+      max-height: 76vh;
+      object-fit: contain;
+      background: #0a0c0d;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
     .lightbox__bar {
       display: flex;
       align-items: center;
@@ -776,6 +784,30 @@
       font-size: 0.58rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
+    }
+
+    .turret__stage { touch-action: pan-y; }
+
+    .stage-nav {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+    }
+    .stage-nav button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      background: rgba(10, 12, 13, 0.85);
+      color: var(--bone);
+      font-family: var(--mono);
+      transition: border-color 200ms ease, color 200ms ease;
+    }
+    .stage-nav button:hover, .stage-nav button:focus-visible {
+      border-color: var(--green);
+      color: var(--green-bright);
     }
 
     .turret-step {
@@ -1464,6 +1496,10 @@
               <img src="assets/turret-ceiling.jpg" alt="Finished turret ceiling with radial framing" loading="lazy" width="960" height="720" />
               <figcaption data-turret-caption>01 / The cone</figcaption>
             </figure>
+            <div class="stage-nav">
+              <button type="button" data-turret-prev aria-label="Previous turret step">←</button>
+              <button type="button" data-turret-next aria-label="Next turret step">→</button>
+            </div>
           </div>
 
           <div data-reveal>
@@ -1789,17 +1825,39 @@
         var caption = stage.querySelector("[data-turret-caption]");
         var steps = Array.prototype.slice.call(document.querySelectorAll("[data-turret-step]"));
         var captions = ["01 / The cone", "02 / Radials", "03 / Tie-in", "04 / The reveal"];
+        var current = 0;
         function activate(index) {
+          current = index;
           imgs.forEach(function (img, i) { img.classList.toggle("is-active", i === index); });
           steps.forEach(function (step, i) { step.classList.toggle("is-active", i === index); });
           caption.textContent = captions[index];
         }
         var lastManual = 0;
+        function manualStep(delta) {
+          lastManual = Date.now();
+          activate((current + delta + steps.length) % steps.length);
+        }
         steps.forEach(function (step, i) {
           step.addEventListener("click", function () {
             lastManual = Date.now();
             activate(i);
           });
+        });
+        document.querySelector("[data-turret-prev]").addEventListener("click", function () { manualStep(-1); });
+        document.querySelector("[data-turret-next]").addEventListener("click", function () { manualStep(1); });
+        var swipeStartX = null;
+        var swipeStartY = null;
+        stage.addEventListener("pointerdown", function (event) {
+          if (event.target.closest(".stage-nav")) return;
+          swipeStartX = event.clientX;
+          swipeStartY = event.clientY;
+        });
+        stage.addEventListener("pointerup", function (event) {
+          if (swipeStartX === null) return;
+          var dx = event.clientX - swipeStartX;
+          var dy = event.clientY - swipeStartY;
+          swipeStartX = null;
+          if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) manualStep(dx < 0 ? 1 : -1);
         });
         var stickyLayout = window.matchMedia("(min-width: 1081px)").matches;
         if (stickyLayout && !reducedMotion && "IntersectionObserver" in window) {
@@ -1855,6 +1913,19 @@
         dialog.addEventListener("keydown", function (event) {
           if (event.key === "ArrowLeft") show(current - 1);
           if (event.key === "ArrowRight") show(current + 1);
+        });
+        var touchX = null;
+        var touchY = null;
+        img.addEventListener("pointerdown", function (event) {
+          touchX = event.clientX;
+          touchY = event.clientY;
+        });
+        img.addEventListener("pointerup", function (event) {
+          if (touchX === null) return;
+          var dx = event.clientX - touchX;
+          var dy = event.clientY - touchY;
+          touchX = null;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(dx < 0 ? current + 1 : current - 1);
         });
         dialog.addEventListener("close", function () {
           if (lastTrigger) lastTrigger.focus();
