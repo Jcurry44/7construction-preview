@@ -351,7 +351,12 @@
     .hero h1 {
       margin: 0;
       font-family: var(--display);
-      font-size: clamp(4.6rem, 10.5vw, 9.2rem);
+      /* Sized against the hero's LEFT COLUMN (~611px once .container caps at
+         1240), not the viewport. At 10.5vw/9.2rem the line "IS EVERYTHING."
+         needed 842px and the word alone 709px, so it broke mid-word and put
+         "G." on its own line. The markup declares two lines; this keeps them
+         two. Capped at 6.6rem because the column stops growing past 1296px. */
+      font-size: clamp(4.6rem, 8.1vw, 6.6rem);
       font-weight: 800;
       letter-spacing: 0.005em;
       line-height: 0.88;
@@ -1204,7 +1209,7 @@
          so the hero read "IS EVERYTHIN". Sized so the longest word fits at
          320px and still fits if the webfont fails and a wider fallback
          renders. */
-      .hero h1 { font-size: clamp(2.4rem, 16vw, 5.6rem); }
+      .hero h1 { font-size: clamp(2.4rem, 15vw, 5.6rem); }
       .hero__actions { display: grid; grid-template-columns: 1fr; }
       .hero__actions .button { width: 100%; }
       .stats__grid { grid-template-columns: 1fr 1fr; }
