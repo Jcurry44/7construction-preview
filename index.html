@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
   <title>7 Construction Inc. | Custom Home Framing — Buffalo &amp; Western New York</title>
   <meta name="description" content="7 Construction Inc. frames custom homes across Buffalo and Western New York — flatwork to dry-in, turrets to truss runs. Framing since 1993, incorporated 2006. Call (716) 208-9774." />
   <meta name="theme-color" content="#101314" />
@@ -358,7 +357,10 @@
       line-height: 0.88;
       text-transform: uppercase;
     }
-    .hero h1 .line { display: block; overflow: hidden; }
+    /* overflow:hidden makes the reveal work but also means any word wider
+       than the line is silently truncated. Last-resort safety: let a word
+       break rather than disappear — a broken word beats a missing one. */
+    .hero h1 .line { display: block; overflow: hidden; overflow-wrap: break-word; }
     .hero h1 .line > span {
       display: block;
       transform: translateY(112%);
@@ -1196,16 +1198,42 @@
 
     @media (max-width: 600px) {
       .container { width: min(var(--container), calc(100% - 26px)); }
-      .hero h1 { font-size: clamp(4rem, 19vw, 5.6rem); }
+      /* 19vw with a 4rem floor made "EVERYTHING." — one unbreakable word,
+         ~4.8x the font size wide — outgrow the container, and .line's
+         overflow:hidden (needed for the reveal) silently cut the tail off,
+         so the hero read "IS EVERYTHIN". Sized so the longest word fits at
+         320px and still fits if the webfont fails and a wider fallback
+         renders. */
+      .hero h1 { font-size: clamp(2.4rem, 16vw, 5.6rem); }
       .hero__actions { display: grid; grid-template-columns: 1fr; }
       .hero__actions .button { width: 100%; }
       .stats__grid { grid-template-columns: 1fr 1fr; }
       .stat { padding: 1.2rem 1rem 1.3rem 0; }
       .stat + .stat { padding-left: 1rem; }
-      .work-grid { grid-template-columns: 1fr; }
+      /* work: a swipe strip instead of nine stacked cards (~3.6 screens → ~1) */
+      .work-grid {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 78%;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        margin-inline: -13px;
+        padding-inline: 13px;
+        scrollbar-width: none;
+      }
+      .work-grid::-webkit-scrollbar { display: none; }
+      .work-card { scroll-snap-align: center; }
       .work-card--wide { grid-column: auto; }
+      .work-card img { min-height: 0; height: 235px; }
       .section h2 { font-size: clamp(3rem, 15vw, 4.6rem); }
-      .seq-rail { grid-template-columns: 1fr; }
+      /* sequence: keep two columns — five full-width steps read as filler */
+      .seq-rail { grid-template-columns: repeat(2, 1fr); gap: 2rem 1.2rem; }
+      /* turret: titles become a 2×2 pill grid; the swipeable stage tells the story */
+      .turret__layout > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .turret-step, .turret-step:last-of-type { border: 1px solid var(--line); }
+      .turret-step { padding: 0.75rem 0.85rem 0.85rem; }
+      .turret-step p { display: none; }
+      .turret-step strong { font-size: 1.28rem; margin-top: 0.3rem; }
       .compare { aspect-ratio: 4 / 3; }
       .form-grid { grid-template-columns: 1fr; }
       .field--full { grid-column: auto; }
@@ -1214,6 +1242,21 @@
       .footer { padding-bottom: 76px; }
       .footer__inner { grid-template-columns: 1fr; gap: 0.7rem; padding: 1.3rem 0; }
       .mobile-dock { display: grid; }
+    }
+
+    /* ---------- drafting layer ---------- */
+    /* The cursor sketches faint pencil strokes over the drafting grid, and
+       they fade like an eraser pass — a craft signal, desktop pointer only. */
+    .draft-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 95;              /* over the page, under the sticky header */
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    @media (hover: none), (pointer: coarse) {
+      .draft-layer { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1229,11 +1272,13 @@
       .blueprint [data-draw] { stroke-dashoffset: 0; animation: none !important; }
       .blueprint text { opacity: 1; transition: none; }
       .hero h1 .line > span { transform: none; animation: none !important; }
+      .draft-layer { display: none !important; }
     }
   </style>
 </head>
 <body>
   <div class="scroll-progress" aria-hidden="true"></div>
+  <canvas class="draft-layer" aria-hidden="true"></canvas>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header" data-header>
@@ -1947,6 +1992,85 @@
           el.addEventListener("mouseleave", function () { el.style.transform = ""; });
         });
       }
+
+      /* drafting layer — the cursor leaves faint pencil strokes that fade */
+      (function () {
+        var canvas = document.querySelector(".draft-layer");
+        if (!canvas) return;
+        if (!finePointer || reducedMotion) { canvas.parentNode.removeChild(canvas); return; }
+        var ctx = canvas.getContext("2d");
+        if (!ctx) { canvas.parentNode.removeChild(canvas); return; }
+
+        function resize() {
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+          canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+        }
+        /* ResizeObserver, not the resize event: it also fires on the FIRST
+           real layout, so a pane/tab that starts at 0×0 still gets a real
+           backing store. (Resize clears the sketch — fine.) */
+        var resizeTimer;
+        function queueResize() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function () {
+            if (canvas.clientWidth > 0 && canvas.clientHeight > 0) resize();
+          }, 150);
+        }
+        if (typeof ResizeObserver !== "undefined") new ResizeObserver(queueResize).observe(canvas);
+        else window.addEventListener("resize", queueResize);
+        resize();
+
+        var last = null;
+        var inkUntil = 0;
+        var raf = null;
+
+        /* Erase a little of everything each frame: a stroke is gone in ~3s.
+           The loop only runs while ink exists — no idle rAF burn. */
+        function fade() {
+          ctx.save();
+          ctx.globalCompositeOperation = "destination-out";
+          ctx.fillStyle = "rgba(0, 0, 0, 0.028)";
+          ctx.fillRect(0, 0, canvas.clientWidth + 2, canvas.clientHeight + 2);
+          ctx.restore();
+          if (performance.now() < inkUntil) raf = requestAnimationFrame(fade);
+          else { raf = null; ctx.clearRect(0, 0, canvas.clientWidth + 2, canvas.clientHeight + 2); }
+        }
+
+        window.addEventListener("pointermove", function (event) {
+          /* Self-heal a stale backing store (missed first layout, or a
+             browser-zoom devicePixelRatio change ResizeObserver can't see) */
+          var wantW = Math.max(1, Math.round(canvas.clientWidth * Math.min(window.devicePixelRatio || 1, 2)));
+          if (canvas.width !== wantW && canvas.clientWidth > 0) resize();
+          var x = event.clientX;
+          var y = event.clientY;
+          if (last) {
+            var dx = x - last.x;
+            var dy = y - last.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 160) { last = { x: x, y: y }; return; } /* pen lift */
+            if (dist < 2) return;
+            /* two offset passes = the doubled line of a graphite edge */
+            ctx.strokeStyle = "rgba(233, 231, 222, 0.14)";
+            ctx.lineWidth = 1.1;
+            ctx.beginPath();
+            ctx.moveTo(last.x, last.y);
+            ctx.lineTo(x + (Math.random() - 0.5), y + (Math.random() - 0.5));
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(233, 231, 222, 0.06)";
+            ctx.beginPath();
+            ctx.moveTo(last.x + 1.4, last.y + 1.6);
+            ctx.lineTo(x + 1.4, y + 1.6);
+            ctx.stroke();
+            inkUntil = performance.now() + 5000;
+            if (!raf) raf = requestAnimationFrame(fade);
+          }
+          last = { x: x, y: y };
+        }, { passive: true });
+        document.documentElement.addEventListener("mouseleave", function () { last = null; });
+      })();
 
       /* quote form */
       var FORM_ENDPOINT = ""; // e.g. "https://formspree.io/f/XXXXXXXX" — set to enable direct submission
