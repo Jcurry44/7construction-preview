@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>7 Construction Inc. | Custom Home Framing — Buffalo &amp; Western New York</title>
   <meta name="description" content="7 Construction Inc. frames custom homes across Buffalo and Western New York — flatwork to dry-in, turrets to truss runs. Framing since 1993, incorporated 2006. Call (716) 208-9774." />
+  <!-- PREVIEW BUILD. This is a full copy of a real business's site carrying
+       their name and phone number; without this it can rank against 7const.com
+       and take real calls to an unofficial URL. Remove both lines only when
+       this becomes the live site at its own domain. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://7const.com/" />
   <meta name="theme-color" content="#101314" />
   <meta property="og:title" content="7 Construction Inc. — The frame is everything." />
   <meta property="og:description" content="Custom home framing for Buffalo &amp; Western New York. Flatwork to dry-in." />
@@ -56,6 +62,7 @@
       --green-bright: #2fd07f;
       --green-deep: #0b7a41;
       --timber: #d2a368;
+      --redline: #e2543a;   /* the only failure hue; green can't carry "wrong" here */
       --display: "Barlow Condensed", "Arial Narrow", sans-serif;
       --sans: "Barlow", "Segoe UI", Arial, sans-serif;
       --mono: "IBM Plex Mono", Consolas, monospace;
@@ -317,22 +324,34 @@
       z-index: -2;
       background: url("assets/hero-rafters.jpg") center 30% / cover no-repeat;
     }
+    /* The photograph IS the hero. The old scrim ran 0.94 across the top-left
+       and buried it — the frame, the flag and the sky were reduced to texture.
+       Now the veil is only where type sits: a bottom-up wash for the copy and
+       a light left bias, leaving the roof line and sky open. */
     .hero__bg::after {
       content: "";
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(100deg, rgba(10, 12, 13, 0.94) 0%, rgba(10, 12, 13, 0.82) 34%, rgba(10, 12, 13, 0.38) 68%, rgba(10, 12, 13, 0.55) 100%),
-        linear-gradient(to top, rgba(10, 12, 13, 0.9), transparent 40%);
+        linear-gradient(to top,
+          rgba(10, 12, 13, 0.94) 0%,
+          rgba(10, 12, 13, 0.86) 22%,
+          rgba(10, 12, 13, 0.52) 45%,
+          rgba(10, 12, 13, 0.12) 68%,
+          rgba(10, 12, 13, 0.20) 100%),
+        linear-gradient(105deg, rgba(10, 12, 13, 0.62) 0%, rgba(10, 12, 13, 0.22) 38%, transparent 62%);
     }
 
+    /* Single column, anchored low: the copy sits in the dark foreground of
+       the photograph instead of splitting the frame with a panel. */
     .hero__inner {
       display: grid;
-      grid-template-columns: minmax(0, 1.06fr) minmax(320px, 0.94fr);
-      gap: clamp(2rem, 6vw, 6rem);
-      align-items: center;
-      padding: clamp(3.4rem, 7vh, 6rem) 0 4.6rem;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: end;
+      width: 100%;
+      padding: clamp(6rem, 22vh, 14rem) 0 clamp(2.6rem, 6vh, 4.2rem);
     }
+    .hero__inner > div { max-width: 46rem; }
 
     .eyebrow {
       display: flex;
@@ -351,12 +370,11 @@
     .hero h1 {
       margin: 0;
       font-family: var(--display);
-      /* Sized against the hero's LEFT COLUMN (~611px once .container caps at
-         1240), not the viewport. At 10.5vw/9.2rem the line "IS EVERYTHING."
-         needed 842px and the word alone 709px, so it broke mid-word and put
-         "G." on its own line. The markup declares two lines; this keeps them
-         two. Capped at 6.6rem because the column stops growing past 1296px. */
-      font-size: clamp(4.6rem, 8.1vw, 6.6rem);
+      /* Sized against the measure the copy actually occupies (46rem now that
+         the hero is one column, was a 611px half-column). Still capped, not
+         viewport-driven: "IS EVERYTHING." is one unbreakable word and the
+         markup declares two lines — this keeps them two at every width. */
+      font-size: clamp(4.6rem, 9vw, 7.6rem);
       font-weight: 800;
       letter-spacing: 0.005em;
       line-height: 0.88;
@@ -426,17 +444,200 @@
       font-size: 9px;
       letter-spacing: 0.08em;
     }
-    .blueprint [data-draw] {
-      stroke-dasharray: 1;
-      stroke-dashoffset: 1;
+    /* The staggered ink-draw reveal and its `.blueprint text { opacity: 0 }`
+       partner were removed with the static elevation. That opacity rule was
+       only ever undone by .is-drawn, which nothing sets any more — leaving a
+       trap where any future .blueprint would render its text invisible. */
+    /* ---------- craft proof (the rack test, on paper) ---------- */
+    /* A coal card inset into the paper section: dark enough for the drawing's
+       own palette to survive, and the contrast reads as a deliberate plate
+       rather than a widget dropped on a light page. */
+    .craft-proof {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1fr);
+      gap: clamp(1.8rem, 4vw, 3.4rem);
+      align-items: center;
+      margin-top: clamp(3rem, 6vw, 4.6rem);
+      padding-top: clamp(2.4rem, 5vw, 3.6rem);
+      border-top: 1px solid var(--paper-line);
     }
-    .blueprint.is-drawn [data-draw] {
-      animation: bp-draw 900ms var(--ease) forwards;
-      animation-delay: calc(var(--i) * 140ms);
+    @media (max-width: 900px) { .craft-proof { grid-template-columns: 1fr; } }
+    .craft-proof__intro span {
+      color: var(--green-deep);
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
-    @keyframes bp-draw { to { stroke-dashoffset: 0; } }
-    .blueprint text { opacity: 0; transition: opacity 600ms ease 2.4s; }
-    .blueprint.is-drawn text { opacity: 1; }
+    .craft-proof__intro h3 {
+      margin: 0.8rem 0 0;
+      font-family: var(--display);
+      font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1.02;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .craft-proof__intro p {
+      margin: 1rem 0 0;
+      max-width: 44ch;
+      color: #454f4a;
+      font-size: 0.97rem;
+      line-height: 1.65;
+    }
+    /* The panel carries its own ground now — it no longer sits on the hero photo. */
+    .craft .blueprint.rack {
+      justify-self: stretch;
+      width: 100%;
+      background: var(--coal);
+      backdrop-filter: none;
+      border-color: rgba(233, 231, 222, 0.14);
+      color: var(--bone);
+    }
+
+    /* ---------- rack test ---------- */
+    .rack svg { overflow: visible; }
+    .rack [data-rack-lean] { transition: transform 220ms var(--ease); }
+    /* The door is a prop supplied by others — draw it lighter than the frame. */
+    .rack .rack-door rect,
+    .rack .rack-door circle,
+    .rack .rack-swing {
+      fill: none;
+      stroke: var(--bone-dim);
+      stroke-width: 1.1;
+      vector-effect: non-scaling-stroke;
+    }
+    .rack .rack-swing { stroke: var(--bone-faint); stroke-dasharray: 3 4; }
+    /* The diagonals ARE the argument — they get the weight, not the door. */
+    .rack .rack-diag {
+      stroke: var(--bone);
+      stroke-width: 1.3;
+      stroke-dasharray: 5 4;
+      vector-effect: non-scaling-stroke;
+      transition: stroke 200ms ease;
+    }
+    .rack.is-off .rack-diag { stroke: var(--timber); }
+    .rack.is-bad .rack-diag { stroke: var(--redline); }
+    /* Visible in BOTH failure states — it is widest exactly where the caption
+       says the door binds, so hiding it there gutted the demonstration. */
+    .rack .rack-gap {
+      fill: var(--timber);
+      stroke: none;
+      opacity: 0;
+      transition: opacity 200ms ease, fill 200ms ease;
+    }
+    .rack.is-off .rack-gap { opacity: 0.55; }
+    .rack.is-bad .rack-gap { opacity: 0.8; fill: var(--redline); }
+    .rack .rack-crack {
+      fill: none;
+      stroke: var(--redline);
+      stroke-width: 1.8;
+      vector-effect: non-scaling-stroke;
+      opacity: 0;
+      transition: opacity 240ms ease;
+    }
+    .rack.is-bad .rack-crack { opacity: 1; }
+    .rack text.rack-ro, .rack text.rack-scale { fill: var(--bone-faint); }
+    .rack text.rack-scale { letter-spacing: 0.1em; }
+
+    .rack-ui { margin-top: 1.1rem; }
+    /* Two tiles, not three: the third repeated the second's number at rest,
+       and three columns broke mid-measurement at 320px. */
+    .rack-readout {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem;
+      padding-bottom: 0.9rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .rack-readout span {
+      display: block;
+      color: var(--bone-faint);
+      font-family: var(--mono);
+      font-size: 0.54rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .rack-readout strong {
+      display: block;
+      margin-top: 0.3rem;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: var(--bone);
+    }
+    /* Bound to a class, not to DOM position — reordering a tile must not
+       silently mis-colour the row. */
+    .rack.is-off .rack-tile--diff strong { color: var(--timber); }
+    .rack.is-bad .rack-tile--diff strong { color: var(--redline); }
+
+    .rack-slider { display: block; margin: 1rem 0 0.85rem; }
+    .rack-slider input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 26px;
+      background: transparent;
+      cursor: grab;
+    }
+    .rack-slider input:active { cursor: grabbing; }
+    .rack-slider input::-webkit-slider-runnable-track {
+      height: 2px;
+      background: var(--line);
+    }
+    .rack-slider input::-moz-range-track { height: 2px; background: var(--line); }
+    .rack-slider input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      margin-top: -10px;
+      border: 1px solid var(--green);
+      border-radius: 0;
+      background: var(--coal);
+      box-shadow: inset 0 0 0 3px var(--coal), inset 0 0 0 9px var(--green);
+    }
+    .rack-slider input::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--green);
+      border-radius: 0;
+      background: var(--green);
+    }
+    .rack-slider input:focus-visible { outline: 3px solid var(--green-bright); outline-offset: 4px; }
+
+    .rack-caption {
+      margin: 0;
+      min-height: 2.9em;
+      font-size: 0.83rem;
+      line-height: 1.5;
+      color: var(--bone-dim);
+    }
+    .rack-caption b {
+      display: block;
+      color: var(--green-bright);
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .rack.is-off .rack-caption b { color: var(--timber); }
+    .rack.is-bad .rack-caption b { color: var(--redline); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .blueprint__tag {
       display: flex;
       justify-content: space-between;
@@ -1144,12 +1345,18 @@
       .nav { gap: 1.2rem; }
       .nav__phone { display: none; }
       .hero__inner { grid-template-columns: 1fr; gap: 3rem; }
+      /* Phones get a taller crop of the same photo, so the veil can stay
+         light up top and only deepen behind the copy. */
       .hero__bg::after {
         background:
-          linear-gradient(rgba(10, 12, 13, 0.82), rgba(10, 12, 13, 0.78)),
-          linear-gradient(to top, rgba(10, 12, 13, 0.92), transparent 40%);
+          linear-gradient(to top,
+            rgba(10, 12, 13, 0.95) 0%,
+            rgba(10, 12, 13, 0.88) 30%,
+            rgba(10, 12, 13, 0.55) 54%,
+            rgba(10, 12, 13, 0.18) 78%,
+            rgba(10, 12, 13, 0.24) 100%);
       }
-      .blueprint { justify-self: start; width: min(100%, 440px); }
+      .hero__inner > div { max-width: none; }
       .stats__grid { grid-template-columns: repeat(2, 1fr); }
       .stat:nth-child(3) { border-left: 0; padding-left: 0; }
       .stat { border-bottom: 1px solid var(--line); }
@@ -1274,7 +1481,7 @@
       }
       [data-reveal] { opacity: 1; transform: none; }
       .seq-rail::after { animation: none !important; transform: scaleX(1); }
-      .blueprint [data-draw] { stroke-dashoffset: 0; animation: none !important; }
+      .rack [data-rack-lean] { transition: none !important; }
       .blueprint text { opacity: 1; transition: none; }
       .hero h1 .line > span { transform: none; animation: none !important; }
       .draft-layer { display: none !important; }
@@ -1339,51 +1546,6 @@
           </p>
         </div>
 
-        <div class="blueprint" data-blueprint aria-hidden="true">
-          <svg viewBox="0 0 520 400" xmlns="http://www.w3.org/2000/svg">
-            <!-- foundation -->
-            <line x1="50" y1="360" x2="470" y2="360" class="bp-green" pathLength="1" data-draw style="--i:0" />
-            <!-- walls -->
-            <line x1="70" y1="360" x2="70" y2="230" pathLength="1" data-draw style="--i:1" />
-            <line x1="450" y1="360" x2="450" y2="230" pathLength="1" data-draw style="--i:1" />
-            <!-- studs -->
-            <line x1="118" y1="360" x2="118" y2="230" pathLength="1" data-draw style="--i:2" />
-            <line x1="166" y1="360" x2="166" y2="230" pathLength="1" data-draw style="--i:2" />
-            <line x1="214" y1="360" x2="214" y2="230" pathLength="1" data-draw style="--i:3" />
-            <line x1="262" y1="360" x2="262" y2="230" pathLength="1" data-draw style="--i:3" />
-            <line x1="310" y1="360" x2="310" y2="230" pathLength="1" data-draw style="--i:4" />
-            <line x1="358" y1="360" x2="358" y2="230" pathLength="1" data-draw style="--i:4" />
-            <line x1="406" y1="360" x2="406" y2="230" pathLength="1" data-draw style="--i:5" />
-            <!-- top plate -->
-            <line x1="70" y1="230" x2="450" y2="230" pathLength="1" data-draw style="--i:6" />
-            <!-- rafters -->
-            <polyline points="70,230 260,96 450,230" class="bp-green" pathLength="1" data-draw style="--i:7" />
-            <line x1="140" y1="230" x2="260" y2="96" pathLength="1" data-draw style="--i:8" />
-            <line x1="380" y1="230" x2="260" y2="96" pathLength="1" data-draw style="--i:8" />
-            <line x1="205" y1="230" x2="292" y2="119" pathLength="1" data-draw style="--i:9" />
-            <line x1="315" y1="230" x2="228" y2="119" pathLength="1" data-draw style="--i:9" />
-            <!-- collar tie + king post -->
-            <line x1="185" y1="184" x2="335" y2="184" pathLength="1" data-draw style="--i:10" />
-            <line x1="260" y1="96" x2="260" y2="230" pathLength="1" data-draw style="--i:10" />
-            <!-- ridge marker -->
-            <line x1="260" y1="70" x2="260" y2="96" class="bp-green" pathLength="1" data-draw style="--i:11" />
-            <!-- dimension: span -->
-            <line x1="70" y1="382" x2="450" y2="382" class="bp-dim" pathLength="1" data-draw style="--i:12" />
-            <line x1="70" y1="376" x2="70" y2="388" class="bp-dim" pathLength="1" data-draw style="--i:12" />
-            <line x1="450" y1="376" x2="450" y2="388" class="bp-dim" pathLength="1" data-draw style="--i:12" />
-            <text x="240" y="396" text-anchor="middle">SPAN</text>
-            <!-- dimension: ridge height -->
-            <line x1="486" y1="96" x2="486" y2="360" class="bp-dim" pathLength="1" data-draw style="--i:13" />
-            <line x1="480" y1="96" x2="492" y2="96" class="bp-dim" pathLength="1" data-draw style="--i:13" />
-            <line x1="480" y1="360" x2="492" y2="360" class="bp-dim" pathLength="1" data-draw style="--i:13" />
-            <text x="500" y="232" text-anchor="middle" transform="rotate(90 500 232)">RIDGE</text>
-            <text x="260" y="58" text-anchor="middle">RIDGE BEAM SET</text>
-          </svg>
-          <div class="blueprint__tag">
-            <span>7C / Frame elevation</span>
-            <span>Sheet A-01</span>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1606,6 +1768,121 @@
             <p>A tight, well-sequenced frame gets the build watertight sooner. Fewer weather days, faster trades behind us.</p>
           </article>
         </div>
+
+        <!-- The proof under note 01. This section's own lead says every
+             door swing inherits what the framing crew leaves behind — so
+             let a visitor do it to a wall and watch the door stop closing. -->
+        <div class="craft-proof" data-reveal>
+          <div class="craft-proof__intro">
+            <span>Try it</span>
+            <h3>Pull a wall out of plumb.</h3>
+            <p>This is a real 8-foot wall with a 3'-2" rough opening. The door stays square, because doors are manufactured square. Everything it costs downstream is what you are paying us to prevent.</p>
+          </div>
+        <!-- ============================================================
+             RACK TEST — the hero's argument, not its decoration.
+             Anyone can claim they frame square. This lets you pull a wall
+             out of plumb and watch what it costs downstream: the diagonals
+             stop matching, a wedge opens beside a door that is still
+             perfectly square, and past tolerance the corner cracks.
+             Geometry is real (36x82 rough opening in a 8ft wall, true
+             diagonals in feet and inches); only the LEAN is exaggerated,
+             and the drawing says so.
+             ============================================================ -->
+        <div class="blueprint rack" data-rack>
+          <svg viewBox="20 78 520 336" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-labelledby="rack-title rack-desc">
+            <title id="rack-title">Wall framing rack test</title>
+            <desc id="rack-desc">Elevation of a framed 8-foot wall with a 3 foot 2 inch by 6 foot 10 inch door rough opening. A slider pulls the wall out of plumb; the two diagonal measurements of the opening separate, and a wedge-shaped gap opens between the leaning jamb and the door, which stays plumb. The lean is drawn twenty times larger than life so it is visible at this size.</desc>
+
+            <!-- the floor: the one thing that does not move -->
+            <line x1="30" y1="340" x2="510" y2="340" class="bp-green" />
+            <line x1="30" y1="347" x2="510" y2="347" class="bp-dim" />
+
+            <!-- everything fastened to the framing leans together -->
+            <g data-rack-lean>
+              <!-- sole plate + double top plate -->
+              <line x1="45" y1="340" x2="495" y2="340" />
+              <line x1="45" y1="100" x2="495" y2="100" />
+              <line x1="45" y1="105" x2="495" y2="105" />
+              <!-- end studs -->
+              <line x1="45" y1="340" x2="45" y2="100" />
+              <line x1="495" y1="340" x2="495" y2="100" />
+              <!-- field studs, 16" on centre (40px at 2.5px/in) -->
+              <line x1="85" y1="340" x2="85" y2="100" />
+              <line x1="125" y1="340" x2="125" y2="100" />
+              <line x1="165" y1="340" x2="165" y2="100" />
+              <line x1="335" y1="340" x2="335" y2="100" />
+              <line x1="375" y1="340" x2="375" y2="100" />
+              <line x1="415" y1="340" x2="415" y2="100" />
+              <line x1="455" y1="340" x2="455" y2="100" />
+              <!-- king studs, full height -->
+              <line x1="196" y1="340" x2="196" y2="100" />
+              <line x1="299" y1="340" x2="299" y2="100" />
+              <!-- jack studs carrying the header: these are the rough opening -->
+              <line x1="200" y1="340" x2="200" y2="135" class="bp-green" />
+              <line x1="295" y1="340" x2="295" y2="135" class="bp-green" />
+              <!-- header -->
+              <line x1="196" y1="135" x2="299" y2="135" class="bp-green" />
+              <line x1="196" y1="105" x2="299" y2="105" class="bp-green" />
+              <line x1="196" y1="135" x2="196" y2="105" class="bp-green" />
+              <line x1="299" y1="135" x2="299" y2="105" class="bp-green" />
+              <!-- the framer's own square test: equal diagonals or it isn't square -->
+              <line x1="200" y1="340" x2="295" y2="135" class="rack-diag" data-rack-diag />
+              <line x1="295" y1="340" x2="200" y2="135" class="rack-diag" data-rack-diag />
+              <!-- drywall corner: fastened to the frame, so it leans with it -->
+              <polyline class="rack-crack" points="299,135 308,124 302,113 311,100" />
+            </g>
+
+            <!-- the wedge between a leaning jamb and a door that stayed plumb -->
+            <polygon class="rack-gap" data-rack-gap points="" />
+
+            <!-- The door is manufactured square and hung plumb. It does not lean
+                 with the wall, which is precisely why the gap shows. -->
+            <g class="rack-door">
+              <rect x="203" y="140" width="90" height="200" />
+              <path d="M293 340 A 90 90 0 0 0 203 250" class="rack-swing" />
+              <circle cx="287" cy="245" r="2.5" />
+            </g>
+
+            <!-- wall height: the gauge the out-of-plumb figure is measured over -->
+            <line x1="520" y1="100" x2="520" y2="340" class="bp-dim" />
+            <line x1="514" y1="100" x2="526" y2="100" class="bp-dim" />
+            <line x1="514" y1="340" x2="526" y2="340" class="bp-dim" />
+            <text x="533" y="224" text-anchor="middle" transform="rotate(90 533 224)">8'-0" WALL</text>
+
+            <text x="247" y="372" text-anchor="middle" class="rack-ro">3'-2" &#215; 6'-10" ROUGH OPENING &#183; 3'-0" DOOR</text>
+            <text x="247" y="392" text-anchor="middle" class="rack-scale">LEAN DRAWN &#215;20 &#183; MEASUREMENTS ARE TRUE</text>
+          </svg>
+
+          <div class="rack-ui">
+            <div class="rack-readout">
+              <div class="rack-tile rack-tile--plumb">
+                <span>Out of plumb / 8 ft</span>
+                <strong data-rack-value>0"</strong>
+              </div>
+              <div class="rack-tile rack-tile--diff">
+                <span>Diagonals off by</span>
+                <strong data-rack-diff>0"</strong>
+              </div>
+            </div>
+
+            <label class="rack-slider">
+              <span class="sr-only">Pull the wall out of plumb</span>
+              <input type="range" min="0" max="8" step="1" value="0" data-rack-input />
+            </label>
+
+            <p class="rack-caption" data-rack-caption>
+              <b data-rack-status>Square</b>
+              <span data-rack-text>Both diagonals read the same. The door hangs itself.</span>
+            </p>
+          </div>
+
+          <div class="blueprint__tag">
+            <span>7C / Rack test</span>
+            <span>Sheet A-01</span>
+          </div>
+        </div>
+        </div>
       </div>
     </section>
 
@@ -1802,23 +2079,114 @@
         if (seqRail) seqRail.classList.add("is-visible");
       }
 
-      /* blueprint draw on load */
-      (function () {
-        var bp = document.querySelector("[data-blueprint]");
-        if (!bp) return;
-        if (reducedMotion) { bp.classList.add("is-drawn"); return; }
-        if ("IntersectionObserver" in window) {
-          var bpObserver = new IntersectionObserver(function (entries, observer) {
-            if (entries[0].isIntersecting) {
-              observer.disconnect();
-              setTimeout(function () { bp.classList.add("is-drawn"); }, 350);
-            }
-          }, { threshold: 0.25 });
-          bpObserver.observe(bp);
-        } else {
-          bp.classList.add("is-drawn");
+      /* ---- rack test -------------------------------------------------
+         Geometry is honest: a 36" x 82" rough opening in a 96" wall, drawn
+         at 2.2px per inch, with the diagonals reported in real feet and
+         inches. Only the LEAN is scaled up (x20) so a quarter inch is
+         visible at this size — the drawing states that on its face.     */
+      (function rackTest() {
+        var rack = document.querySelector("[data-rack]");
+        if (!rack) return;
+
+        var input = rack.querySelector("[data-rack-input]");
+        var lean = rack.querySelector("[data-rack-lean]");
+        var gap = rack.querySelector("[data-rack-gap]");
+        var valueEl = rack.querySelector("[data-rack-value]");
+        var diffEl = rack.querySelector("[data-rack-diff]");
+        var statusEl = rack.querySelector("[data-rack-status]");
+        var textEl = rack.querySelector("[data-rack-text]");
+        /* Every node this component writes to must exist before it runs: a
+           throw here would abort the whole page IIFE, taking the quote form's
+           submit handler down with it. */
+        if (!input || !lean || !gap || !valueEl || !diffEl || !statusEl || !textEl) return;
+
+        /* MEASURED IN INCHES. The drawing's pixels are derived from these,
+           never the other way round — deriving inches back out of rounded
+           pixel coordinates put every reported diagonal 13/64" off the
+           opening the sheet is labelled with. */
+        var WALL_IN = 96;         /* 8'-0" wall: the gauge for "out of plumb" */
+        var RO_W_IN = 38;         /* 3'-2" rough opening for a 3'-0" door     */
+        var RO_H_IN = 82;         /* 6'-10" head height                       */
+
+        var PX_PER_IN = 2.5;      /* drawing scale only                       */
+        var EXAGGERATION = 20;    /* lean only — stated on the drawing        */
+        var FLOOR_Y = 340;
+        var HEAD_Y = FLOOR_Y - RO_H_IN * PX_PER_IN;   /* 135 */
+        var WALL_PX = WALL_IN * PX_PER_IN;            /* 240 */
+        var JAMB_X = 295;         /* latch-side jack stud                     */
+        var DOOR_R = 293;         /* door slab's latch edge (stays plumb)     */
+        var DOOR_TOP = 140;
+
+        /* n/16 or n/32 -> reduced fraction, no inch mark (callers add it) */
+        function fraction(num, den) {
+          while (num % 2 === 0 && num > 0) { num /= 2; den /= 2; }
+          return num + "/" + den;
         }
+        function inchLabel(inches) {
+          var sx = Math.round(inches * 16);
+          if (sx === 0) return '0"';
+          var whole = Math.floor(sx / 16), rem = sx % 16;
+          return (whole ? whole + (rem ? " " : "") : "") + (rem ? fraction(rem, 16) : "") + '"';
+        }
+
+        /* First person, and each stage lands on what it costs the client —
+           the site's own voice. The old copy sold concealment ("nobody ever
+           knows"), which contradicted the standards section two screens down. */
+        var STAGES = [
+          { max: 0,     cls: "",       status: "Square",           text: "Both diagonals read the same. The door hangs itself." },
+          { max: 0.125, cls: "is-off", status: "Inside our bar",   text: "Casing would cover it. We don't build to what casing covers." },
+          { max: 0.25,  cls: "is-off", status: "Past our bar",     text: "This is where a jamb starts eating shims and a trim carpenter starts losing a morning." },
+          { max: 0.375, cls: "is-bad", status: "Out of tolerance", text: "The door binds on the latch side. Someone planes a slab we should have hung clean." },
+          { max: 99,    cls: "is-bad", status: "Callback",         text: "The corner cracks, the door never sits right, and the trades behind us bill for our mistake." }
+        ];
+
+        function render(sixteenths) {
+          var inches = sixteenths / 16;
+
+          /* TRUE geometry, in inches, for every number shown */
+          var tTrue = inches * (RO_H_IN / WALL_IN);
+          var d1 = Math.sqrt(Math.pow(RO_W_IN + tTrue, 2) + RO_H_IN * RO_H_IN);
+          var d2 = Math.sqrt(Math.pow(RO_W_IN - tTrue, 2) + RO_H_IN * RO_H_IN);
+
+          /* EXAGGERATED geometry, in pixels, for the picture only */
+          var kVis = inches * PX_PER_IN * EXAGGERATION;
+          var angle = -Math.atan(kVis / WALL_PX) * 180 / Math.PI;
+          lean.setAttribute("transform",
+            "translate(0," + FLOOR_Y + ") skewX(" + angle.toFixed(4) + ") translate(0,-" + FLOOR_Y + ")");
+
+          /* the wedge between a leaning jamb and a door that stayed plumb */
+          var tVis = kVis * (RO_H_IN / WALL_IN);
+          gap.setAttribute("points", [
+            DOOR_R + "," + FLOOR_Y,
+            JAMB_X + "," + FLOOR_Y,
+            (JAMB_X + tVis).toFixed(2) + "," + HEAD_Y,
+            DOOR_R + "," + DOOR_TOP
+          ].join(" "));
+
+          valueEl.textContent = inchLabel(inches);
+          /* The spread is the number a framer actually acts on, and unlike the
+             two absolute diagonals it moves on every detent. */
+          diffEl.textContent = inchLabel(d1 - d2);
+
+          var stage = STAGES[0];
+          for (var i = 0; i < STAGES.length; i++) {
+            if (inches <= STAGES[i].max) { stage = STAGES[i]; break; }
+          }
+          rack.classList.toggle("is-off", stage.cls === "is-off");
+          rack.classList.toggle("is-bad", stage.cls === "is-bad");
+          statusEl.textContent = stage.status;
+          textEl.textContent = stage.text;
+          /* Announce through the slider itself. A live region on the caption
+             would fire on every tick of a drag — this speaks once per
+             committed value, the way a range control should. */
+          input.setAttribute("aria-valuetext",
+            valueEl.textContent + " out of plumb over 8 feet — " + stage.status + ". " + stage.text);
+        }
+
+        input.addEventListener("input", function () { render(Number(input.value)); });
+        render(0);
       })();
+
 
       /* years-since counter */
       (function () {
