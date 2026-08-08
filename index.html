@@ -1067,6 +1067,35 @@
     /* ---------- craft (paper) ---------- */
     .craft { background: var(--paper); color: var(--ink); }
     .craft .section-index { color: var(--green-deep); }
+
+    /* ---------- anatomy: read a wall ---------- */
+    .anatomy__layout {
+      display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr);
+      gap: 2.2rem; align-items: center; margin-top: 2.4rem;
+    }
+    @media (max-width: 860px) { .anatomy__layout { grid-template-columns: 1fr; } }
+    .anatomy svg { width: 100%; height: auto; display: block; }
+    .anatomy [data-part] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .anatomy [data-part] rect {
+      fill: var(--coal-card); stroke: var(--bone-dim); stroke-width: 1.4;
+      transition: stroke .16s ease, fill .16s ease, opacity .16s ease;
+    }
+    @media (hover: hover) {
+      .anatomy [data-part]:hover rect { stroke: var(--green); }
+    }
+    .anatomy [data-part].is-hot rect { stroke: var(--green); fill: rgba(0, 160, 80, 0.13); }
+    .anatomy.has-pick [data-part]:not(.is-hot) rect { opacity: 0.42; }
+    .anatomy__card {
+      border: 1px solid var(--line); background: var(--coal-card);
+      border-radius: 10px; padding: 1.5rem 1.6rem; min-height: 172px;
+    }
+    .anatomy__card small {
+      font-family: var(--mono, ui-monospace, monospace); font-size: 0.62rem;
+      letter-spacing: 0.16em; color: var(--green); text-transform: uppercase;
+    }
+    .anatomy__card strong { display: block; font-size: 1.35rem; margin: 0.45rem 0 0.55rem; }
+    .anatomy__card p { margin: 0; color: var(--bone-dim); font-size: 0.95rem; line-height: 1.6; }
+    .anatomy__hint { margin-top: 0.9rem; font-size: 0.78rem; color: var(--bone-faint); }
     .craft .section-lead { color: #454f4a; }
     .craft h2 { color: var(--ink); }
 
@@ -1886,10 +1915,38 @@
       </div>
     </section>
 
+    <section class="section anatomy" id="anatomy" aria-labelledby="anatomy-title">
+      <div class="container">
+        <div data-reveal>
+          <p class="section-index">05 / Field guide</p>
+          <h2 id="anatomy-title">Read a wall <em>like a framer.</em></h2>
+          <p class="section-lead">Every wall we raise is the same eight members doing eight different jobs. Tap one and learn its name.</p>
+        </div>
+        <div class="anatomy__layout" data-reveal>
+          <svg viewBox="0 0 760 470" role="img" aria-label="Framed wall with a window opening, members labeled on tap" data-wall>
+            <g data-part="topplate"><rect x="40" y="40" width="680" height="13"/><rect x="40" y="55" width="680" height="13"/></g>
+            <g data-part="stud"><rect x="60" y="70" width="13" height="358"/><rect x="160" y="70" width="13" height="358"/><rect x="660" y="70" width="13" height="358"/></g>
+            <g data-part="king"><rect x="277" y="70" width="13" height="358"/><rect x="530" y="70" width="13" height="358"/></g>
+            <g data-part="header"><rect x="292" y="140" width="236" height="16"/><rect x="292" y="158" width="236" height="16"/></g>
+            <g data-part="jack"><rect x="292" y="176" width="13" height="252"/><rect x="515" y="176" width="13" height="252"/></g>
+            <g data-part="cripple"><rect x="352" y="70" width="13" height="68"/><rect x="424" y="70" width="13" height="68"/><rect x="496" y="70" width="13" height="68"/><rect x="352" y="332" width="13" height="96"/><rect x="424" y="332" width="13" height="96"/><rect x="464" y="332" width="13" height="96"/></g>
+            <g data-part="sill"><rect x="307" y="316" width="206" height="14"/></g>
+            <g data-part="bottom"><rect x="40" y="430" width="680" height="16"/></g>
+          </svg>
+          <div class="anatomy__card">
+            <small id="anatomyKick">THE WALL</small>
+            <strong id="anatomyName">Tap any member</strong>
+            <p id="anatomyText">Eight names, eight jobs. The ones that carry weight get doubled &mdash; that's the pattern to look for.</p>
+            <p class="anatomy__hint" id="anatomyHint">The opening in the middle is a window rough-in.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="hiring" id="hiring" aria-labelledby="hiring-title">
       <div class="container hiring__inner">
         <div data-reveal>
-          <p class="section-index">05 / Careers</p>
+          <p class="section-index">06 / Careers</p>
           <h2 id="hiring-title">Framers <em>wanted.</em></h2>
           <p>Join one of WNY's most respected framing crews. Experience welcome, work ethic required — we'll get back to you within two business days.</p>
         </div>
@@ -1900,7 +1957,7 @@
     <section class="section" id="contact" aria-labelledby="contact-title">
       <div class="container contact__layout">
         <div data-reveal>
-          <p class="section-index">06 / Start your build</p>
+          <p class="section-index">07 / Start your build</p>
           <h2 id="contact-title">Walk the site <em>with us.</em></h2>
           <p class="section-lead">Plans ready or just a sketch — call the office and we'll give it to you straight: scope, sequence, and a real number.</p>
 
@@ -2187,6 +2244,39 @@
         render(0);
       })();
 
+
+      /* anatomy: read a wall */
+      (function () {
+        var wall = document.querySelector("[data-wall]");
+        if (!wall) return;
+        var sec = document.getElementById("anatomy");
+        var INFO = {
+          topplate: ["Carries the roof", "Double top plate", "Two 2\u00d7s lapped at the corners. Ties the walls into one frame and hands the roof load down into every stud."],
+          bottom:   ["The wall's feet", "Bottom plate", "The wall's contact with the deck \u2014 nailed through the subfloor into the joists so the whole wall acts as one piece."],
+          stud:     ["The ribs", "Common stud", "Sixteen inches on center, every time \u2014 so every sheet of sheathing and drywall lands on wood without hunting."],
+          king:     ["The opening's spine", "King stud", "Runs plate to plate beside the opening. Everything the window does hangs off this pair."],
+          jack:     ["The window's legs", "Jack stud", "Nailed to the king and cut to exactly header height. The header's weight runs down these into the plate."],
+          header:   ["The beam over the hole", "Header", "Bridges the opening and carries what the missing studs can't. Sized to the span \u2014 this is where sag starts if a crew cheaps out."],
+          cripple:  ["Rhythm keepers", "Cripple studs", "Short studs above the header and below the sill. They carry little \u2014 they keep the 16-inch rhythm so every surface has backing."],
+          sill:     ["The window's bench", "Rough sill", "Flat and level or the window fights you forever. Doubled when the opening gets wide."]
+        };
+        function pick(g) {
+          var k = g.getAttribute("data-part"), d = INFO[k];
+          if (!d) return;
+          Array.prototype.forEach.call(wall.querySelectorAll("[data-part]"), function (x) {
+            x.classList.toggle("is-hot", x === g);
+          });
+          sec.classList.add("has-pick");
+          document.getElementById("anatomyKick").textContent = d[0].toUpperCase();
+          document.getElementById("anatomyName").textContent = d[1];
+          document.getElementById("anatomyText").textContent = d[2];
+          document.getElementById("anatomyHint").textContent = "";
+        }
+        wall.addEventListener("click", function (e) {
+          var g = e.target.closest("[data-part]");
+          if (g) pick(g);
+        });
+      })();
 
       /* years-since counter */
       (function () {
