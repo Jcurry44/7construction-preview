@@ -1614,6 +1614,8 @@
       .stat:nth-child(n+3) { border-bottom: 0; }
       .work-grid { grid-template-columns: repeat(2, 1fr); }
       .work-card--wide { grid-column: span 2; }
+      /* 7 cards at two columns leave a lone orphan — let the closer span */
+      .work-grid .work-card:last-child { grid-column: span 2; }
       .turret__layout { grid-template-columns: 1fr; }
       .turret__stage { position: relative; top: 0; }
     }
@@ -1686,7 +1688,7 @@
       }
       .work-grid::-webkit-scrollbar { display: none; }
       .work-card { scroll-snap-align: center; }
-      .work-card--wide { grid-column: auto; }
+      .work-card--wide, .work-grid .work-card:last-child { grid-column: auto; }
       .work-card img { min-height: 0; height: 235px; }
       .section h2 { font-size: clamp(3rem, 15vw, 4.6rem); }
       /* sequence: keep two columns — five full-width steps read as filler */
@@ -1838,8 +1840,8 @@
         <div class="work-grid" data-reveal>
           <button class="work-card work-card--wide" type="button" data-lightbox="0">
             <figure>
-              <img src="assets/lakefront.jpg" alt="Fully framed lakefront home over the water" loading="lazy" width="1280" height="959" />
-              <figcaption><strong>Lakefront estate</strong><span>Full shell</span></figcaption>
+              <img src="assets/lakefront.jpg?v=2" alt="Lakefront estate framed at the water's edge in winter" loading="lazy" width="1060" height="698" />
+              <figcaption><strong>Lakefront estate</strong><span>Framed through winter</span></figcaption>
             </figure>
           </button>
           <button class="work-card" type="button" data-lightbox="1">
@@ -1850,43 +1852,31 @@
           </button>
           <button class="work-card" type="button" data-lightbox="2">
             <figure>
-              <img src="assets/ranch-frame.jpg" alt="Aerial of a long single-story home frame" loading="lazy" width="1100" height="825" />
-              <figcaption><strong>Single story</strong><span>Truss package</span></figcaption>
+              <img src="assets/shell-green.jpg?v=2" alt="Aerial of a sheathed two-story with roof framing underway" loading="lazy" width="1100" height="648" />
+              <figcaption><strong>Custom two-story</strong><span>Roof framing</span></figcaption>
             </figure>
           </button>
           <button class="work-card" type="button" data-lightbox="3">
             <figure>
-              <img src="assets/shell-green.jpg" alt="Two-story custom home sheathed in green panels" loading="lazy" width="1100" height="825" />
-              <figcaption><strong>Custom two-story</strong><span>Sheathed</span></figcaption>
-            </figure>
-          </button>
-          <button class="work-card" type="button" data-lightbox="4">
-            <figure>
-              <img src="assets/winter-topdown.jpg" alt="Top-down aerial of a home framed in winter snow" loading="lazy" width="1100" height="825" />
-              <figcaption><strong>Winter set</strong><span>No off-season</span></figcaption>
-            </figure>
-          </button>
-          <button class="work-card" type="button" data-lightbox="5">
-            <figure>
-              <img src="assets/truss-run.jpg" alt="Long truss run over garage and great room" loading="lazy" width="960" height="540" />
-              <figcaption><strong>Truss run</strong><span>Long spans</span></figcaption>
-            </figure>
-          </button>
-          <button class="work-card" type="button" data-lightbox="6">
-            <figure>
-              <img src="assets/flatwork.jpg" alt="Foundation flatwork with steel beams placed" loading="lazy" width="1008" height="756" />
+              <img src="assets/flatwork.jpg?v=2" alt="Foundation flatwork with steel beams placed" loading="lazy" width="1008" height="505" />
               <figcaption><strong>Flatwork</strong><span>Steel &amp; sills</span></figcaption>
             </figure>
           </button>
-          <button class="work-card" type="button" data-lightbox="7">
+          <button class="work-card" type="button" data-lightbox="4">
             <figure>
               <img src="assets/wrapped.jpg" alt="Framed house wrapped in building paper" loading="lazy" width="1200" height="683" />
               <figcaption><strong>Dried in</strong><span>Ready for trades</span></figcaption>
             </figure>
           </button>
-          <button class="work-card" type="button" data-lightbox="8">
+          <button class="work-card work-card--wide" type="button" data-lightbox="5">
             <figure>
-              <img src="assets/near-finish.jpg" alt="House with roof and exterior nearing completion" loading="lazy" width="1100" height="825" />
+              <img src="assets/truss-run.jpg?v=2" alt="Street view of a large custom home with hand-cut roof framing" loading="lazy" width="960" height="428" />
+              <figcaption><strong>Hand-cut roof</strong><span>Rafters &amp; ridge</span></figcaption>
+            </figure>
+          </button>
+          <button class="work-card" type="button" data-lightbox="6">
+            <figure>
+              <img src="assets/near-finish.jpg?v=2" alt="House with roof and exterior nearing completion" loading="lazy" width="815" height="710" />
               <figcaption><strong>Handoff</strong><span>Frame to finish</span></figcaption>
             </figure>
           </button>
@@ -2747,12 +2737,27 @@
         function loadInto(i, done) {
           img.src = items[i].src;
           img.alt = items[i].alt;
+          var called = false;
           /* the extra frame lets layout settle on the new natural size
              before anything measures the img */
-          var finish = function () { requestAnimationFrame(done); };
-          if (img.decode) img.decode().then(finish, finish);
-          else if (img.complete) finish();
-          else img.onload = finish;
+          var finish = function () {
+            if (called) return;
+            called = true;
+            requestAnimationFrame(done);
+          };
+          var lifeboat = function () {
+            if (called) return;
+            if (img.complete) finish();
+            else img.onload = finish;
+          };
+          if (img.decode) {
+            img.decode().then(finish, finish);
+            /* decode() can hang in rendering-suspended contexts even with
+               the bytes fully loaded — never let the plate sit blank on it */
+            setTimeout(lifeboat, 350);
+          } else {
+            lifeboat();
+          }
         }
 
         var ghostAnims = [];
