@@ -784,47 +784,243 @@
     }
     .work-card:hover::after { opacity: 1; }
 
-    /* lightbox */
+    /* lightbox — the field-plate viewer. Not a popup: the tapped photo
+       grows out of its card into a full-screen drawing plate (crop-mark
+       corners, sheet counter, plate rail) and settles back into the grid
+       on close. */
     .lightbox {
-      width: min(1080px, calc(100vw - 32px));
-      border: 1px solid var(--line);
-      background: var(--coal);
-      color: var(--bone);
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      border: 0;
       padding: 0;
+      background: transparent;
+      color: var(--bone);
+      overscroll-behavior: contain;
     }
-    .lightbox::backdrop { background: rgba(5, 7, 8, 0.88); backdrop-filter: blur(6px); }
-    .lightbox img {
-      width: 100%;
-      max-height: 76vh;
-      object-fit: contain;
-      background: #0a0c0d;
-      touch-action: pan-y;
-      user-select: none;
-      -webkit-user-drag: none;
+    /* the single column is minmax(0,1fr), never auto: an auto track sizes
+       to the thumb strip's max-content and shoves the whole plate off a
+       phone screen */
+    .lightbox[open] {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
     }
-    .lightbox__bar {
+    .lightbox::backdrop { background: transparent; }
+
+    .lightbox__veil {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        linear-gradient(var(--line-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
+        rgba(7, 9, 10, 0.97);
+      background-size: 56px 56px;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+    .lightbox.is-open .lightbox__veil { opacity: 1; }
+
+    .lightbox__progress {
+      position: absolute;
+      top: 0; right: 0; left: 0;
+      z-index: 4;
+      height: 2px;
+      background: rgba(233, 231, 222, 0.1);
+    }
+    .lightbox__progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: var(--green);
+      transition: width 420ms var(--ease);
+    }
+
+    /* chrome fades up a beat after the veil, so the photo lands first */
+    .lightbox__top, .lightbox__bar {
+      position: relative;
+      z-index: 3;
+      opacity: 0;
+      transition: opacity 260ms ease 110ms, transform 300ms var(--ease) 110ms;
+    }
+    .lightbox__top { transform: translateY(-8px); }
+    .lightbox__bar { transform: translateY(10px); }
+    .lightbox.is-open .lightbox__top,
+    .lightbox.is-open .lightbox__bar { opacity: 1; transform: none; }
+
+    .lightbox__top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 0.7rem 0.9rem;
-      border-top: 1px solid var(--line);
+      padding: 0.85rem clamp(14px, 3vw, 34px) 0.65rem;
+    }
+    .lightbox__set {
+      color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
     }
-    .lightbox__nav { display: flex; gap: 0.5rem; }
-    .lightbox__nav button, .lightbox__close {
-      min-width: 42px;
-      min-height: 42px;
+    .lightbox__set b { color: var(--green-bright); font-weight: 500; }
+    .lightbox__close {
+      width: 44px;
+      height: 44px;
       border: 1px solid var(--line);
-      background: transparent;
+      background: rgba(10, 12, 13, 0.6);
       color: var(--bone);
       font-family: var(--mono);
       transition: border-color 200ms ease, color 200ms ease;
     }
-    .lightbox__nav button:hover, .lightbox__close:hover { border-color: var(--green); color: var(--green-bright); }
+    .lightbox__close:hover { border-color: var(--green); color: var(--green-bright); }
+
+    .lightbox__stage {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      touch-action: none;
+      cursor: zoom-out;
+    }
+    .lightbox__stage img {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: auto;
+      height: auto;
+      max-width: calc(100% - clamp(20px, 7vw, 110px));
+      max-height: calc(100% - 16px);
+      opacity: 0;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* crop marks pinned to the photo's own corners — placed from script */
+    .lightbox__frame {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 240ms ease 80ms,
+        left 300ms var(--ease), top 300ms var(--ease),
+        width 300ms var(--ease), height 300ms var(--ease);
+    }
+    .lightbox__stage.is-ready .lightbox__frame { opacity: 1; }
+    .lightbox__stage.is-dragging .lightbox__frame { opacity: 0; transition: opacity 120ms ease; }
+    .lightbox__frame i {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      border: 0 solid var(--green);
+    }
+    .lightbox__frame i:nth-child(1) { top: -7px; left: -7px; border-top-width: 2px; border-left-width: 2px; }
+    .lightbox__frame i:nth-child(2) { top: -7px; right: -7px; border-top-width: 2px; border-right-width: 2px; }
+    .lightbox__frame i:nth-child(3) { bottom: -7px; left: -7px; border-bottom-width: 2px; border-left-width: 2px; }
+    .lightbox__frame i:nth-child(4) { bottom: -7px; right: -7px; border-bottom-width: 2px; border-right-width: 2px; }
+
+    .lightbox__arrow {
+      position: absolute;
+      top: 50%;
+      z-index: 3;
+      width: 46px;
+      height: 46px;
+      margin-top: -23px;
+      border: 1px solid var(--line);
+      background: rgba(10, 12, 13, 0.72);
+      color: var(--bone);
+      font-family: var(--mono);
+      opacity: 0;
+      transition: opacity 260ms ease 110ms, border-color 200ms ease, color 200ms ease;
+    }
+    .lightbox.is-open .lightbox__arrow { opacity: 1; }
+    .lightbox__arrow:hover, .lightbox__arrow:focus-visible { border-color: var(--green); color: var(--green-bright); }
+    .lightbox__arrow--prev { left: clamp(10px, 2.4vw, 26px); }
+    .lightbox__arrow--next { right: clamp(10px, 2.4vw, 26px); }
+
+    .lightbox__bar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem 2.4rem;
+      padding: 0.8rem clamp(14px, 3vw, 34px) calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    }
+    .lightbox__title { min-width: 0; }
+    .lightbox__title strong {
+      display: block;
+      overflow: hidden;
+      font-family: var(--display);
+      font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: 0.015em;
+      line-height: 0.95;
+      text-transform: uppercase;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .lightbox__title span {
+      display: block;
+      margin-top: 0.4rem;
+      color: var(--green-bright);
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .lightbox__thumbs {
+      position: relative;
+      display: flex;
+      gap: 7px;
+      max-width: 58%;
+      padding: 3px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .lightbox__thumbs::-webkit-scrollbar { display: none; }
+    .lightbox__thumbs button {
+      flex: 0 0 auto;
+      width: 66px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--line);
+      background: var(--coal-card);
+      opacity: 0.4;
+      transition: opacity 200ms ease, border-color 200ms ease;
+    }
+    .lightbox__thumbs button:hover { opacity: 0.75; }
+    .lightbox__thumbs button.is-active { opacity: 1; border-color: var(--green); }
+    .lightbox__thumbs img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* the FLIP ghost: the wrapper scales between card and plate while the
+       cover image inside counter-scales, so the photo never distorts */
+    .lightbox__ghost {
+      position: fixed;
+      z-index: 2;
+      display: none;
+      overflow: hidden;
+      pointer-events: none;
+      will-change: transform;
+    }
+    .lightbox__ghost img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      will-change: transform;
+    }
+
+    @media (max-width: 720px) {
+      .lightbox__arrow { display: none; }
+      .lightbox__bar { flex-direction: column; align-items: stretch; gap: 0.85rem; }
+      .lightbox__thumbs { max-width: none; }
+    }
+    @media (max-height: 480px) {
+      .lightbox__thumbs { display: none; }
+    }
 
     /* ---------- sequence ---------- */
     .sequence { background: var(--coal-soft); border-block: 1px solid var(--line); }
@@ -2041,15 +2237,27 @@
   </div>
 
   <dialog class="lightbox" data-lightbox-dialog aria-label="Project photo viewer">
-    <img src="" alt="" data-lightbox-img />
-    <div class="lightbox__bar">
-      <span data-lightbox-caption></span>
-      <div class="lightbox__nav">
-        <button type="button" data-lightbox-prev aria-label="Previous photo">←</button>
-        <button type="button" data-lightbox-next aria-label="Next photo">→</button>
-        <button type="button" class="lightbox__close" data-lightbox-close aria-label="Close viewer">✕</button>
-      </div>
+    <div class="lightbox__veil" aria-hidden="true"></div>
+    <div class="lightbox__progress" aria-hidden="true"><span data-lb-progress></span></div>
+    <header class="lightbox__top">
+      <span class="lightbox__set">7C / Field plates · <b data-lb-counter>01 / 09</b></span>
+      <button type="button" class="lightbox__close" data-lightbox-close aria-label="Close viewer">✕</button>
+    </header>
+    <div class="lightbox__stage" data-lb-stage>
+      <img src="" alt="" data-lightbox-img decoding="async" />
+      <div class="lightbox__frame" data-lb-frame aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     </div>
+    <button type="button" class="lightbox__arrow lightbox__arrow--prev" data-lightbox-prev aria-label="Previous photo">←</button>
+    <button type="button" class="lightbox__arrow lightbox__arrow--next" data-lightbox-next aria-label="Next photo">→</button>
+    <footer class="lightbox__bar">
+      <div class="lightbox__title">
+        <strong data-lb-title></strong>
+        <span data-lb-tag></span>
+      </div>
+      <div class="lightbox__thumbs" data-lb-thumbs aria-label="All project photos"></div>
+    </footer>
+    <div class="lightbox__ghost" data-lb-ghost aria-hidden="true"><img alt="" /></div>
+    <span class="sr-only" aria-live="polite" data-lb-live></span>
   </dialog>
 
   <script>
@@ -2383,63 +2591,358 @@
         }
       })();
 
-      /* lightbox */
+      /* lightbox — the field-plate viewer.
+         The tapped photo FLIPs from its card into the full screen and flies
+         back into the grid on close (two-layer transform: the wrapper scales
+         between the rects while the cover image counter-scales, so the photo
+         never distorts). Plates slide directionally; on touch, pull down to
+         dismiss with the photo following the finger. */
       (function () {
         var dialog = document.querySelector("[data-lightbox-dialog]");
         if (!dialog || typeof dialog.showModal !== "function") return;
+        var stage = dialog.querySelector("[data-lb-stage]");
         var img = dialog.querySelector("[data-lightbox-img]");
-        var captionEl = dialog.querySelector("[data-lightbox-caption]");
+        var frame = dialog.querySelector("[data-lb-frame]");
+        var veil = dialog.querySelector(".lightbox__veil");
+        var ghost = dialog.querySelector("[data-lb-ghost]");
+        var ghostImg = ghost.querySelector("img");
+        var counterEl = dialog.querySelector("[data-lb-counter]");
+        var progressEl = dialog.querySelector("[data-lb-progress]");
+        var titleWrap = dialog.querySelector(".lightbox__title");
+        var titleEl = dialog.querySelector("[data-lb-title]");
+        var tagEl = dialog.querySelector("[data-lb-tag]");
+        var thumbsWrap = dialog.querySelector("[data-lb-thumbs]");
+        var liveEl = dialog.querySelector("[data-lb-live]");
+        var canAnimate = "animate" in Element.prototype;
+        var EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
         var cards = Array.prototype.slice.call(document.querySelectorAll("[data-lightbox]"));
         var items = cards.map(function (card) {
           var cardImg = card.querySelector("img");
           var strong = card.querySelector("figcaption strong");
           var tag = card.querySelector("figcaption span");
           return {
+            img: cardImg,
             src: cardImg.getAttribute("src"),
             alt: cardImg.getAttribute("alt"),
-            caption: (strong ? strong.textContent : "") + (tag ? " — " + tag.textContent : "")
+            title: strong ? strong.textContent : "",
+            tag: tag ? tag.textContent : ""
           };
         });
+        var total = String(items.length).padStart(2, "0");
         var current = 0;
         var lastTrigger = null;
-        function show(index) {
-          current = (index + items.length) % items.length;
-          img.src = items[current].src;
-          img.alt = items[current].alt;
-          captionEl.textContent = String(current + 1).padStart(2, "0") + " / " + String(items.length).padStart(2, "0") + " · " + items[current].caption;
-        }
-        cards.forEach(function (card, i) {
-          card.addEventListener("click", function () {
-            lastTrigger = card;
-            show(i);
-            dialog.showModal();
+        var closing = false;
+        var navToken = 0;
+
+        var thumbs = items.map(function (item, i) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.setAttribute("aria-label", "Photo " + (i + 1) + " of " + items.length + ": " + item.title);
+          var t = document.createElement("img");
+          t.src = item.src;
+          t.alt = "";
+          t.loading = "lazy";
+          b.appendChild(t);
+          b.addEventListener("click", function () {
+            if (i !== current) go(i, i > current ? 1 : -1, 0);
           });
+          thumbsWrap.appendChild(b);
+          return b;
         });
-        dialog.querySelector("[data-lightbox-prev]").addEventListener("click", function () { show(current - 1); });
-        dialog.querySelector("[data-lightbox-next]").addEventListener("click", function () { show(current + 1); });
-        dialog.querySelector("[data-lightbox-close]").addEventListener("click", function () { dialog.close(); });
-        dialog.addEventListener("click", function (event) {
-          if (event.target === dialog) dialog.close();
+
+        function reducedNow() { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+        /* html gets overflow:hidden while the viewer is up; the vanished
+           scrollbar's width is repaid as padding so the page doesn't shift
+           behind the veil. */
+        function lockScroll() {
+          var sbw = window.innerWidth - document.documentElement.clientWidth;
+          document.documentElement.style.overflow = "hidden";
+          if (sbw > 0) document.documentElement.style.paddingRight = sbw + "px";
+        }
+        function unlockScroll() {
+          document.documentElement.style.overflow = "";
+          document.documentElement.style.paddingRight = "";
+        }
+
+        function preload(i) {
+          [i - 1, i + 1].forEach(function (n) {
+            var pre = new Image();
+            pre.src = items[(n + items.length) % items.length].src;
+          });
+        }
+
+        function centerThumb(i) {
+          var b = thumbs[i];
+          var target = b.offsetLeft - (thumbsWrap.clientWidth - b.offsetWidth) / 2;
+          if (thumbsWrap.scrollTo) thumbsWrap.scrollTo({ left: target, behavior: reducedNow() ? "auto" : "smooth" });
+          else thumbsWrap.scrollLeft = target;
+        }
+
+        function setMeta(i) {
+          counterEl.textContent = String(i + 1).padStart(2, "0") + " / " + total;
+          progressEl.style.width = ((i + 1) / items.length) * 100 + "%";
+          titleEl.textContent = items[i].title;
+          tagEl.textContent = items[i].tag;
+          thumbs.forEach(function (b, n) { b.classList.toggle("is-active", n === i); });
+          liveEl.textContent = "Photo " + (i + 1) + " of " + items.length + ": " + items[i].title + " — " + items[i].tag;
+        }
+
+        function placeFrame() {
+          var r = img.getBoundingClientRect();
+          if (r.width === 0) return;
+          var s = stage.getBoundingClientRect();
+          frame.style.left = (r.left - s.left) + "px";
+          frame.style.top = (r.top - s.top) + "px";
+          frame.style.width = r.width + "px";
+          frame.style.height = r.height + "px";
+        }
+
+        function loadInto(i, done) {
+          img.src = items[i].src;
+          img.alt = items[i].alt;
+          /* the extra frame lets layout settle on the new natural size
+             before anything measures the img */
+          var finish = function () { requestAnimationFrame(done); };
+          if (img.decode) img.decode().then(finish, finish);
+          else if (img.complete) finish();
+          else img.onload = finish;
+        }
+
+        var ghostAnims = [];
+        function flip(fromRect, toRect, src, duration, onDone) {
+          ghostAnims.forEach(function (a) { a.cancel(); });
+          ghostImg.src = src;
+          ghost.style.display = "block";
+          ghost.style.left = toRect.left + "px";
+          ghost.style.top = toRect.top + "px";
+          ghost.style.width = toRect.width + "px";
+          ghost.style.height = toRect.height + "px";
+          var sx = fromRect.width / toRect.width;
+          var sy = fromRect.height / toRect.height;
+          var dx = (fromRect.left + fromRect.width / 2) - (toRect.left + toRect.width / 2);
+          var dy = (fromRect.top + fromRect.height / 2) - (toRect.top + toRect.height / 2);
+          var s = Math.max(sx, sy);
+          var wrap = ghost.animate(
+            [{ transform: "translate(" + dx + "px," + dy + "px) scale(" + sx + "," + sy + ")" },
+             { transform: "translate(0,0) scale(1,1)" }],
+            { duration: duration, easing: EASE }
+          );
+          var inner = ghostImg.animate(
+            [{ transform: "scale(" + (s / sx) + "," + (s / sy) + ")" }, { transform: "scale(1,1)" }],
+            { duration: duration, easing: EASE }
+          );
+          ghostAnims = [wrap, inner];
+          wrap.onfinish = function () {
+            ghost.style.display = "none";
+            if (onDone) onDone();
+          };
+        }
+
+        function openViewer(index, card) {
+          lastTrigger = card;
+          current = index;
+          closing = false;
+          lockScroll();
+          dialog.showModal();
+          setMeta(index);
+          centerThumb(index);
+          stage.classList.remove("is-ready");
+          img.style.opacity = "0";
+          img.style.transform = "";
+          requestAnimationFrame(function () { dialog.classList.add("is-open"); });
+          var token = ++navToken;
+          loadInto(index, function () {
+            if (token !== navToken || !dialog.open) return;
+            placeFrame();
+            var from = items[index].img.getBoundingClientRect();
+            var to = img.getBoundingClientRect();
+            function reveal() {
+              if (!dialog.open) return;
+              img.style.opacity = "1";
+              stage.classList.add("is-ready");
+              preload(index);
+            }
+            if (reducedNow() || !canAnimate || from.width === 0 || to.width === 0) { reveal(); return; }
+            flip(from, to, items[index].src, 460, reveal);
+          });
+        }
+
+        cards.forEach(function (card, i) {
+          card.addEventListener("click", function () { openViewer(i, card); });
         });
+
+        function go(index, dir, fromX) {
+          if (!dialog.open || closing) return;
+          var target = (index + items.length) % items.length;
+          var token = ++navToken;
+          var slide = !reducedNow() && canAnimate && img.style.opacity === "1";
+          current = target;
+          setMeta(target);
+          centerThumb(target);
+          preload(target);
+          if (slide) {
+            titleWrap.animate(
+              [{ opacity: 0.2, transform: "translateY(5px)" }, { opacity: 1, transform: "none" }],
+              { duration: 360, easing: EASE }
+            );
+          }
+          function bringIn() {
+            if (token !== navToken) return;
+            loadInto(target, function () {
+              if (token !== navToken) return;
+              placeFrame();
+              img.style.opacity = "1";
+              if (slide) {
+                img.animate(
+                  [{ opacity: 0, transform: "translateX(" + dir * 46 + "px)" }, { opacity: 1, transform: "none" }],
+                  { duration: 300, easing: EASE }
+                );
+              }
+            });
+          }
+          if (slide) {
+            var out = img.animate(
+              [{ opacity: 1, transform: "translateX(" + (fromX || 0) + "px)" },
+               { opacity: 0, transform: "translateX(" + dir * -46 + "px)" }],
+              { duration: 170, easing: "ease-in" }
+            );
+            out.onfinish = function () { img.style.opacity = "0"; bringIn(); };
+          } else {
+            img.style.opacity = "0";
+            bringIn();
+          }
+        }
+
+        function closeViewer() {
+          if (closing || !dialog.open) return;
+          closing = true;
+          navToken++;
+          dialog.classList.remove("is-open");
+          stage.classList.remove("is-dragging");
+          var card = cards[current];
+          /* if the set was browsed, land the photo on ITS card — nudge the
+             grid/strip so the card is on screen before measuring */
+          if (card !== lastTrigger) {
+            try { card.scrollIntoView({ behavior: "instant", block: "nearest", inline: "center" }); }
+            catch (err) { /* older scroll spec — skip the nudge */ }
+          }
+          var to = items[current].img.getBoundingClientRect();
+          var from = img.getBoundingClientRect();
+          var inView = to.width > 0 && to.bottom > 8 && to.top < window.innerHeight - 8 &&
+            to.right > 8 && to.left < window.innerWidth - 8;
+          var loaded = img.style.opacity === "1";
+          stage.classList.remove("is-ready");
+          function done() { dialog.close(); }
+          if (!reducedNow() && canAnimate && inView && loaded && from.width > 0) {
+            img.style.opacity = "0";
+            flip(from, to, items[current].src, 400, done);
+          } else if (!reducedNow() && canAnimate && loaded) {
+            img.animate(
+              [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(0.955)" }],
+              { duration: 220, easing: "ease-in" }
+            );
+            img.style.opacity = "0";
+            setTimeout(done, 230);
+          } else {
+            done();
+          }
+        }
+
+        dialog.querySelector("[data-lightbox-close]").addEventListener("click", closeViewer);
+        dialog.querySelector("[data-lightbox-prev]").addEventListener("click", function () { go(current - 1, -1, 0); });
+        dialog.querySelector("[data-lightbox-next]").addEventListener("click", function () { go(current + 1, 1, 0); });
         dialog.addEventListener("keydown", function (event) {
-          if (event.key === "ArrowLeft") show(current - 1);
-          if (event.key === "ArrowRight") show(current + 1);
+          if (event.key === "ArrowLeft") { event.preventDefault(); go(current - 1, -1, 0); }
+          if (event.key === "ArrowRight") { event.preventDefault(); go(current + 1, 1, 0); }
         });
-        var touchX = null;
-        var touchY = null;
-        img.addEventListener("pointerdown", function (event) {
-          touchX = event.clientX;
-          touchY = event.clientY;
-        });
-        img.addEventListener("pointerup", function (event) {
-          if (touchX === null) return;
-          var dx = event.clientX - touchX;
-          var dy = event.clientY - touchY;
-          touchX = null;
-          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(dx < 0 ? current + 1 : current - 1);
+        /* Esc routes through the animated close instead of vanishing */
+        dialog.addEventListener("cancel", function (event) {
+          event.preventDefault();
+          closeViewer();
         });
         dialog.addEventListener("close", function () {
+          closing = false;
+          navToken++;
+          ghostAnims.forEach(function (a) { a.cancel(); });
+          ghost.style.display = "none";
+          img.style.opacity = "0";
+          img.style.transform = "";
+          veil.style.opacity = "";
+          unlockScroll();
           if (lastTrigger) lastTrigger.focus();
+        });
+        window.addEventListener("resize", function () {
+          if (dialog.open) placeFrame();
+        });
+
+        /* drag: vertical (touch) pulls the plate down to dismiss and the
+           photo follows the finger; horizontal pulls between plates */
+        var drag = null;
+        var dragMoved = false;
+        stage.addEventListener("pointerdown", function (event) {
+          if (closing || (event.button !== undefined && event.button !== 0)) return;
+          drag = { id: event.pointerId, x: event.clientX, y: event.clientY, axis: null,
+            touch: event.pointerType !== "mouse", dx: 0, dy: 0 };
+          dragMoved = false;
+        });
+        stage.addEventListener("pointermove", function (event) {
+          if (!drag || event.pointerId !== drag.id) return;
+          var dx = event.clientX - drag.x;
+          var dy = event.clientY - drag.y;
+          if (!drag.axis) {
+            if (Math.abs(dx) < 9 && Math.abs(dy) < 9) return;
+            drag.axis = Math.abs(dy) > Math.abs(dx) ? "y" : "x";
+            if (drag.axis === "y" && !drag.touch) { drag = null; return; }
+            try { stage.setPointerCapture(drag.id); } catch (err) {}
+            stage.classList.add("is-dragging");
+          }
+          dragMoved = true;
+          if (drag.axis === "y") {
+            drag.dy = Math.max(0, dy);
+            img.style.transform = "translateY(" + drag.dy + "px) scale(" +
+              Math.max(0.86, 1 - drag.dy / 1500) + ")";
+            veil.style.opacity = String(Math.max(0.4, 1 - drag.dy / 560));
+          } else {
+            drag.dx = dx;
+            img.style.transform = "translateX(" + dx * 0.55 + "px)";
+          }
+        });
+        stage.addEventListener("pointerup", function (event) {
+          if (!drag || event.pointerId !== drag.id) return;
+          var d = drag;
+          drag = null;
+          stage.classList.remove("is-dragging");
+          if (!d.axis) return;
+          veil.style.opacity = "";
+          if (d.axis === "y" && d.dy > 90) {
+            /* closeViewer measures the dragged rect, so the photo flies
+               home from under the finger; the leftover inline transform is
+               cleared by the close handler */
+            closeViewer();
+            return;
+          }
+          var settle = d.axis === "y"
+            ? "translateY(" + d.dy + "px) scale(" + Math.max(0.86, 1 - d.dy / 1500) + ")"
+            : "translateX(" + d.dx * 0.55 + "px)";
+          img.style.transform = "";
+          if (d.axis === "x" && Math.abs(d.dx) > 64) {
+            go(current + (d.dx < 0 ? 1 : -1), d.dx < 0 ? 1 : -1, d.dx * 0.55);
+          } else if (canAnimate && !reducedNow() && dragMoved) {
+            img.animate([{ transform: settle }, { transform: "none" }], { duration: 240, easing: EASE });
+          }
+        });
+        stage.addEventListener("pointercancel", function (event) {
+          if (!drag || event.pointerId !== drag.id) return;
+          drag = null;
+          stage.classList.remove("is-dragging");
+          veil.style.opacity = "";
+          img.style.transform = "";
+        });
+        stage.addEventListener("click", function (event) {
+          if (dragMoved) { dragMoved = false; return; }
+          if (event.target === stage) closeViewer();
         });
       })();
 
