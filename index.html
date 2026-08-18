@@ -817,15 +817,36 @@
       position: absolute;
       inset: 0;
       z-index: 0;
-      background:
-        linear-gradient(var(--line-soft) 1px, transparent 1px),
-        linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
-        rgba(7, 9, 10, 0.97);
-      background-size: 56px 56px;
+      overflow: hidden;
+      background: rgba(7, 9, 10, 0.985);
       opacity: 0;
       transition: opacity 300ms ease;
     }
     .lightbox.is-open .lightbox__veil { opacity: 1; }
+    /* the current photo bleeds behind its own plate — blurred, dark, and
+       over-sized so the blur never shows a hard edge. It rides inside the
+       veil, so every veil fade (open, close, pull-down) carries it too. */
+    .lightbox__veil .lightbox__bleed {
+      position: absolute;
+      inset: -64px;
+      width: calc(100% + 128px);
+      max-width: none;   /* the global img reset would cap the over-bleed */
+      height: calc(100% + 128px);
+      object-fit: cover;
+      filter: blur(48px) saturate(1.05) brightness(0.42);
+      opacity: 0.55;
+    }
+    /* drafting grid + vignette etched over the bleed, focusing the plate */
+    .lightbox__veil::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(var(--line-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-soft) 1px, transparent 1px),
+        radial-gradient(120% 90% at 50% 46%, transparent 40%, rgba(5, 7, 8, 0.6) 100%);
+      background-size: 56px 56px, 56px 56px, 100% 100%;
+    }
 
     .lightbox__progress {
       position: absolute;
@@ -887,14 +908,16 @@
       touch-action: none;
       cursor: zoom-out;
     }
+    /* sized from script to the contain-fit rect: photos scale UP to fill
+       the stage (capped ×1.6), never just down to natural size — a plate
+       should command the screen. The max rules only guard the pre-measure
+       state. */
     .lightbox__stage img {
       position: absolute;
       inset: 0;
       margin: auto;
-      width: auto;
-      height: auto;
-      max-width: calc(100% - clamp(20px, 7vw, 110px));
-      max-height: calc(100% - 16px);
+      max-width: 100%;
+      max-height: 100%;
       opacity: 0;
       cursor: grab;
       user-select: none;
@@ -1020,6 +1043,9 @@
     }
     @media (max-height: 480px) {
       .lightbox__thumbs { display: none; }
+    }
+    @media (min-width: 1400px) {
+      .lightbox__thumbs button { width: 84px; height: 56px; }
     }
 
     /* ---------- sequence ---------- */
@@ -2237,7 +2263,7 @@
   </div>
 
   <dialog class="lightbox" data-lightbox-dialog aria-label="Project photo viewer">
-    <div class="lightbox__veil" aria-hidden="true"></div>
+    <div class="lightbox__veil" aria-hidden="true"><img class="lightbox__bleed" data-lb-bleed alt="" /></div>
     <div class="lightbox__progress" aria-hidden="true"><span data-lb-progress></span></div>
     <header class="lightbox__top">
       <span class="lightbox__set">7C / Field plates · <b data-lb-counter>01 / 09</b></span>
@@ -2604,6 +2630,7 @@
         var img = dialog.querySelector("[data-lightbox-img]");
         var frame = dialog.querySelector("[data-lb-frame]");
         var veil = dialog.querySelector(".lightbox__veil");
+        var bleed = dialog.querySelector("[data-lb-bleed]");
         var ghost = dialog.querySelector("[data-lb-ghost]");
         var ghostImg = ghost.querySelector("img");
         var counterEl = dialog.querySelector("[data-lb-counter]");
@@ -2689,6 +2716,24 @@
           liveEl.textContent = "Photo " + (i + 1) + " of " + items.length + ": " + items[i].title + " — " + items[i].tag;
         }
 
+        /* contain-fit that also UPSCALES (capped) — a 900px photo must not
+           sit timid in the middle of a 2000px screen */
+        function fitPhoto() {
+          var nw = img.naturalWidth;
+          var nh = img.naturalHeight;
+          var s = stage.getBoundingClientRect();
+          if (!nw || !nh || s.width === 0 || s.height === 0) return;
+          var padX = Math.min(s.width * 0.05, 56);
+          var padY = 12;
+          var k = Math.min(
+            (s.width - padX * 2) / nw,
+            (s.height - padY * 2) / nh,
+            1.6
+          );
+          img.style.width = Math.round(nw * k) + "px";
+          img.style.height = Math.round(nh * k) + "px";
+        }
+
         function placeFrame() {
           var r = img.getBoundingClientRect();
           if (r.width === 0) return;
@@ -2748,6 +2793,7 @@
           dialog.showModal();
           setMeta(index);
           centerThumb(index);
+          bleed.src = items[index].src;
           stage.classList.remove("is-ready");
           img.style.opacity = "0";
           img.style.transform = "";
@@ -2755,6 +2801,7 @@
           var token = ++navToken;
           loadInto(index, function () {
             if (token !== navToken || !dialog.open) return;
+            fitPhoto();
             placeFrame();
             var from = items[index].img.getBoundingClientRect();
             var to = img.getBoundingClientRect();
@@ -2792,6 +2839,8 @@
             if (token !== navToken) return;
             loadInto(target, function () {
               if (token !== navToken) return;
+              bleed.src = items[target].src;
+              fitPhoto();
               placeFrame();
               img.style.opacity = "1";
               if (slide) {
@@ -2874,7 +2923,7 @@
           if (lastTrigger) lastTrigger.focus();
         });
         window.addEventListener("resize", function () {
-          if (dialog.open) placeFrame();
+          if (dialog.open) { fitPhoto(); placeFrame(); }
         });
 
         /* drag: vertical (touch) pulls the plate down to dismiss and the
