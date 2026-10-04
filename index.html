@@ -3,19 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- .js gates every hidden-until-revealed state: with script off (or in
+       print) the page is simply there instead of blank below the hero -->
+  <script>document.documentElement.classList.add("js");</script>
   <title>7 Construction Inc. | Custom Home Framing — Buffalo &amp; Western New York</title>
-  <meta name="description" content="7 Construction Inc. frames custom homes across Buffalo and Western New York — flatwork to dry-in, turrets to truss runs. Framing since 1993, incorporated 2006. Call (716) 208-9774." />
+  <meta name="description" content="7 Construction Inc. frames custom homes across Buffalo and Western New York — flatwork to dry-in, turrets to truss runs. Established 2006. Call (716) 208-9774." />
   <!-- PREVIEW BUILD. This is a full copy of a real business's site carrying
        their name and phone number; without this it can rank against 7const.com
        and take real calls to an unofficial URL. Remove both lines only when
        this becomes the live site at its own domain. -->
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="canonical" href="https://7const.com/" />
+  <!-- LAUNCH: canonical, og:url, og:image and the JSON-LD url move to
+       https://7const.com/ together. They must always name one host. -->
+  <link rel="canonical" href="https://jcurry44.github.io/7construction-preview/" />
   <meta name="theme-color" content="#101314" />
   <meta property="og:title" content="7 Construction Inc. — The frame is everything." />
   <meta property="og:description" content="Custom home framing for Buffalo &amp; Western New York. Flatwork to dry-in." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://7const.com/" />
+  <meta property="og:url" content="https://jcurry44.github.io/7construction-preview/" />
   <meta property="og:image" content="https://jcurry44.github.io/7construction-preview/assets/hero-rafters.jpg" />
   <meta property="og:image:width" content="1600" />
   <meta property="og:image:height" content="1200" />
@@ -31,7 +36,7 @@
       "@type": "HomeAndConstructionBusiness",
       "name": "7 Construction Inc.",
       "description": "Custom home framing and general contracting for Buffalo and Western New York.",
-      "url": "https://7const.com/",
+      "url": "https://jcurry44.github.io/7construction-preview/",
       "telephone": "+1-716-208-9774",
       "address": {
         "@type": "PostalAddress",
@@ -57,7 +62,7 @@
       --ink: #14181a;
       --bone: #e9e7de;
       --bone-dim: rgba(233, 231, 222, 0.62);
-      --bone-faint: rgba(233, 231, 222, 0.38);
+      --bone-faint: rgba(233, 231, 222, 0.55);   /* 5.2:1 on coal; was .38 (3.1:1) */
       --green: #00a050;
       --green-bright: #2fd07f;
       --green-deep: #0b7a41;
@@ -67,14 +72,24 @@
       --sans: "Barlow", "Segoe UI", Arial, sans-serif;
       --mono: "IBM Plex Mono", Consolas, monospace;
       --container: 1240px;
+      --gutter: 56px;       /* total side margin; 36px <=880, 26px <=600 */
+      --section-pad: clamp(3.5rem, 6vw, 5rem);   /* 80px at 1440; 3.25rem <=600 */
       --header-h: 74px;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      /* three small-type steps instead of ten sizes between 8 and 10.9px */
+      --t-micro: 0.66rem;      /* mono labels, tags, captions (10.6px) */
+      --t-micro-lg: 0.74rem;   /* nav, eyebrow, section index, hints, form labels (11.8px) */
+      --t-small: 0.84rem;      /* secondary sentences (13.4px) */
     }
 
     * , *::before, *::after { box-sizing: border-box; }
 
     html {
       scroll-behavior: smooth;
+      /* Every scroll-into-view (anchor jump, keyboard focus) clears the
+         sticky header by 24px — and the dock, below 981px. The anchors'
+         own scroll-margin-top values are deltas from this landing. */
+      scroll-padding-top: calc(var(--header-h) + 1.5rem);
       background: var(--coal);
     }
 
@@ -99,9 +114,17 @@
     button, input, select, textarea { color: inherit; font: inherit; }
     button { cursor: pointer; }
     h1, h2, h3, p { margin-top: 0; }
+    /* headings balance their lines, paragraphs avoid a one-word last line;
+       .nb keeps a hyphenated term ("dry-in") from splitting at the hyphen */
+    h1, h2, h3, h4 { text-wrap: balance; }
+    p { text-wrap: pretty; }
+    .nb { white-space: nowrap; }
 
-    .container {
-      width: min(var(--container), calc(100% - 56px));
+    /* .hero__inner is a flex item; listing it here keeps the hero copy on the
+       same gutter as the header and every section (it used to be width:100%,
+       which tied on specificity, won on order, and pinned the copy to x=0). */
+    .container, .hero__inner {
+      width: min(var(--container), calc(100% - var(--gutter)));
       margin-inline: auto;
     }
 
@@ -177,8 +200,8 @@
     .brand__type span {
       color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.5rem;
-      letter-spacing: 0.22em;
+      font-size: var(--t-micro);
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
@@ -192,7 +215,7 @@
       position: relative;
       color: var(--bone-dim);
       font-family: var(--mono);
-      font-size: 0.66rem;
+      font-size: var(--t-micro);   /* --t-micro-lg (11.8px) once the burger collapses earlier (EL-10) */
       font-weight: 500;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -228,8 +251,8 @@
     }
     .nav__phone small {
       color: var(--bone-faint);
-      font-size: 0.5rem;
-      letter-spacing: 0.18em;
+      font-size: var(--t-micro);
+      letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
@@ -283,8 +306,31 @@
       color: var(--bone);
     }
     .menu-toggle svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    /* two bars fold into an X while the menu is open (aria-expanded carries
+       the state; the label stays "Menu") */
+    .menu-toggle path { transform-box: fill-box; transform-origin: 50% 50%; transition: transform 180ms var(--ease); }
+    .site-header.menu-open .menu-toggle path:first-child { transform: translateY(4px) rotate(45deg); }
+    .site-header.menu-open .menu-toggle path:last-child { transform: translateY(-4px) rotate(-45deg); }
 
-    section { scroll-margin-top: calc(var(--header-h) + 1rem); }
+    /* one-tap call for the 981-1080 band, where the number is hidden and the
+       dock has not started yet: a square icon button beside the quote button */
+    .nav__tel {
+      display: none;
+      width: 48px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      color: var(--bone);
+      transition: border-color 200ms ease, color 200ms ease;
+    }
+    .nav__tel:hover, .nav__tel:focus-visible { border-color: var(--green); color: var(--green-bright); }
+    .nav__tel svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+
+    /* the menu's Call row exists only in the collapsed menu */
+    .nav__call { display: none; }
+
+    section { scroll-margin-top: -0.5rem; }   /* header + 16px (see html) */
 
     /* ---------- dimension divider ---------- */
     .dim {
@@ -295,7 +341,7 @@
       margin: 0;
       color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.6rem;
+      font-size: var(--t-micro-lg);
       letter-spacing: 0.16em;
       text-transform: uppercase;
     }
@@ -348,33 +394,40 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       align-items: end;
-      width: 100%;
       padding: clamp(6rem, 22vh, 14rem) 0 clamp(2.6rem, 6vh, 4.2rem);
     }
     .hero__inner > div { max-width: 46rem; }
 
+    /* The eyebrow sits on lit timber, where green mono at 11.8px measured
+       1.2-3.3:1. It gets its own ground: a coal plate with a green edge,
+       read like a tag on the photo rather than text floating over it. */
     .eyebrow {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.8rem;
       margin: 0 0 1.5rem;
+      padding: 0.4rem 0.7rem;
+      border-left: 2px solid var(--green);
+      background: rgba(10, 12, 13, 0.78);
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.66rem;
+      font-size: var(--t-micro-lg);
       font-weight: 500;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.12em;
+      line-height: 1.4;
       text-transform: uppercase;
     }
-    .eyebrow::before { content: ""; width: 30px; height: 2px; background: var(--green); }
+    .eyebrow__short { display: none; }   /* the ≤600 reading, see below */
 
     .hero h1 {
       margin: 0;
       font-family: var(--display);
-      /* Sized against the measure the copy actually occupies (46rem now that
-         the hero is one column, was a 611px half-column). Still capped, not
-         viewport-driven: "IS EVERYTHING." is one unbreakable word and the
-         markup declares two lines — this keeps them two at every width. */
-      font-size: clamp(4.6rem, 9vw, 7.6rem);
+      /* One fluid size, no breakpoint (the old 600/601 swap dropped it 18%).
+         15vw is the phone size: with "IS EVERYTHING." ~5.7em wide it fits
+         the container at 320px and still does if the webfont fails and a
+         wider fallback renders. At 390px it meets the shallower 6.57vw line,
+         which ramps smoothly to the 7.6rem cap (reached ~1350px). Phones and
+         wide desktops keep the size they had. Two lines at every width. */
+      font-size: clamp(2.4rem, min(15vw, 2.05rem + 6.57vw), 7.6rem);
       font-weight: 800;
       letter-spacing: 0.005em;
       line-height: 0.88;
@@ -409,9 +462,9 @@
       flex-wrap: wrap;
       gap: 0.5rem 1.9rem;
       margin-top: 2rem;
-      color: var(--bone-faint);
+      color: var(--bone-dim);   /* over the photo, not coal: faint read 3.1:1 */
       font-family: var(--mono);
-      font-size: 0.62rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.13em;
       text-transform: uppercase;
     }
@@ -465,7 +518,7 @@
     .craft-proof__intro span {
       color: var(--green-deep);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
@@ -555,7 +608,7 @@
       display: block;
       color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.54rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
@@ -584,16 +637,16 @@
     }
     .rack-slider input:active { cursor: grabbing; }
     .rack-slider input::-webkit-slider-runnable-track {
-      height: 2px;
-      background: var(--line);
+      height: 3px;
+      background: rgba(233, 231, 222, 0.42);
     }
-    .rack-slider input::-moz-range-track { height: 2px; background: var(--line); }
+    .rack-slider input::-moz-range-track { height: 3px; background: rgba(233, 231, 222, 0.42); }
     .rack-slider input::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 22px;
       height: 22px;
-      margin-top: -10px;
+      margin-top: -9.5px;
       border: 1px solid var(--green);
       border-radius: 0;
       background: var(--coal);
@@ -619,7 +672,7 @@
       display: block;
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.56rem;
+      font-size: var(--t-micro);
       font-weight: 700;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -646,7 +699,7 @@
       border-top: 1px solid var(--line);
       color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.56rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
@@ -669,7 +722,7 @@
       margin-bottom: 0.7rem;
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.56rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
@@ -682,10 +735,28 @@
       letter-spacing: 0.01em;
       font-variant-numeric: tabular-nums;
     }
-    .stat > span { display: block; margin-top: 0.45rem; color: var(--bone-faint); font-size: 0.8rem; }
+    .stat__arrow {
+      display: inline-block;
+      width: 0.66em;
+      height: 0.66em;
+      margin: 0 0.05em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 4;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+    }
+    .stat > span { display: block; margin-top: 0.45rem; color: var(--bone-dim); font-size: var(--t-small); text-wrap: balance; }
 
     /* ---------- sections ---------- */
-    .section { position: relative; padding: clamp(5.5rem, 10vw, 9rem) 0; }
+    /* The anchor margin cancels the section's own top padding, so a nav jump
+       lands the eyebrow ~24px under the header (html's scroll-padding-top),
+       not 100-160px of empty grid. */
+    .section {
+      position: relative;
+      padding: var(--section-pad) 0;
+      scroll-margin-top: calc(-1 * var(--section-pad));
+    }
 
     .section-index {
       display: flex;
@@ -694,7 +765,7 @@
       margin: 0 0 1.4rem;
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.62rem;
+      font-size: var(--t-micro-lg);
       font-weight: 500;
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -729,7 +800,9 @@
       align-items: end;
       margin-bottom: 3.2rem;
     }
-    .work__head p { margin: 0; color: var(--bone-dim); font-size: 0.95rem; line-height: 1.7; }
+    /* scoped off .section-index: a bare `.work__head p` (0,1,1) used to beat
+       it (0,1,0) and render the "01 /" label as 15px grey body copy */
+    .work__head > p:not(.section-index) { margin: 0; color: var(--bone-dim); font-size: 0.95rem; line-height: 1.7; }
 
     .work-grid {
       display: grid;
@@ -764,9 +837,11 @@
       align-items: baseline;
       gap: 1rem;
       padding: 2rem 0.9rem 0.75rem;
-      background: linear-gradient(to top, rgba(10, 12, 13, 0.88), transparent);
+      /* the text sits in the bottom third: hold the wash at .84 that far up
+         so the green tag clears 4.5:1 on the lightest plates */
+      background: linear-gradient(to top, rgba(10, 12, 13, 0.94), rgba(10, 12, 13, 0.84) 55%, transparent);
       font-family: var(--mono);
-      font-size: 0.6rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
@@ -885,7 +960,7 @@
     .lightbox__set {
       color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.6rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
@@ -991,7 +1066,7 @@
       margin-top: 0.4rem;
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.16em;
       text-transform: uppercase;
     }
@@ -1083,10 +1158,10 @@
       border: 2px solid var(--green);
       background: var(--coal-soft);
     }
-    .seq-step span {
+    .seq-step > span {
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.12em;
     }
     .seq-step h4 {
@@ -1097,17 +1172,22 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
     }
-    .seq-step p { margin: 0.5rem 0 0; color: var(--bone-faint); font-size: 0.8rem; line-height: 1.6; }
+    .seq-step p { margin: 0.5rem 0 0; color: var(--bone-dim); font-size: var(--t-small); line-height: 1.6; }
 
     /* compare slider */
     .compare-wrap { margin-top: clamp(3.4rem, 6vw, 5.5rem); }
+    .compare-wrap .dim { margin-bottom: 0.9rem; }
     .compare {
       position: relative;
       overflow: hidden;
       border: 1px solid var(--line);
-      aspect-ratio: 16 / 10;
-      max-height: 640px;
-      touch-action: none;
+      /* full column width (aspect-ratio + max-height used to shrink it to
+         1024px of a 1240px column); height from the viewport instead */
+      width: 100%;
+      height: clamp(360px, 44vw, 640px);
+      /* pan-y: a thumb on the photo still scrolls the page; only the
+         sideways drag belongs to the slider */
+      touch-action: pan-y;
       user-select: none;
     }
     .compare img {
@@ -1128,22 +1208,17 @@
       background: var(--green);
       pointer-events: none;
     }
+    /* the handle is a drawn chevron pair (same 1.8 stroke as the menu and
+       call glyphs), not a text string: it stays crisp at any size */
     .compare__divider::before {
-      content: "⟨ ⟩";
+      content: "";
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      display: grid;
-      place-items: center;
-      width: 48px; height: 48px;
+      width: 44px; height: 44px;
       border: 2px solid var(--green);
-      border-radius: 50%;
-      background: rgba(10, 12, 13, 0.85);
-      color: var(--green-bright);
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      letter-spacing: -0.05em;
-      white-space: nowrap;
+      border-radius: 0;
+      background: rgba(10, 12, 13, 0.85) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e9e7de' stroke-width='1.8'%3E%3Cpath d='M9 7l-4 5 4 5M15 7l4 5-4 5'/%3E%3C/svg%3E") center / 22px no-repeat;
     }
     .compare__label {
       position: absolute;
@@ -1154,13 +1229,14 @@
       border: 1px solid var(--line);
       color: var(--bone);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.14em;
       text-transform: uppercase;
       pointer-events: none;
     }
     .compare__label--a { left: 12px; }
     .compare__label--b { right: 12px; }
+    .compare__stage::before { content: " · "; white-space: pre; }
     .compare__range {
       position: absolute;
       inset: 0;
@@ -1169,15 +1245,15 @@
       margin: 0;
       opacity: 0;
       cursor: ew-resize;
+      touch-action: pan-y;
     }
-    .compare__hint {
-      margin: 0.8rem 0 0;
-      color: var(--bone-faint);
-      font-family: var(--mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
+    /* the range is invisible, so focus is drawn on the frame and the handle
+       (a ring plus a solid halo: shape and weight, not hue) */
+    .compare:has(.compare__range:focus-visible) { outline: 3px solid var(--green-bright); outline-offset: 4px; }
+    .compare:has(.compare__range:focus-visible) .compare__divider::before { box-shadow: 0 0 0 3px var(--green-bright); }
+    /* arrow keys only mean something with a keyboard-and-pointer device */
+    .compare__keys { display: none; }
+    @media (hover: hover) { .compare__keys { display: inline; } }
 
     /* ---------- turret anatomy ---------- */
     .turret__layout {
@@ -1209,12 +1285,14 @@
       position: absolute;
       bottom: 10px; left: 10px;
       z-index: 2;
+      /* step titles run long ("Stack the radials"): wrap before the arrows */
+      max-width: calc(100% - 128px);
       padding: 0.45rem 0.7rem;
       border: 1px solid var(--line);
       background: rgba(10, 12, 13, 0.85);
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
@@ -1258,7 +1336,7 @@
     .turret-step small {
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.13em;
       text-transform: uppercase;
     }
@@ -1283,8 +1361,18 @@
       transition: transform 420ms var(--ease);
     }
     .turret-step.is-active::after { transform: scaleX(1); }
-    .turret-step:not(.is-active) { opacity: 0.55; }
-    .turret-step:hover { opacity: 0.85; }
+    .turret-step:not(.is-active) { opacity: 0.85; }
+    .turret-step:hover, .turret-step:focus-visible { opacity: 1; }
+    /* two columns: the step on the stage reads brightest, the rest step back
+       in lightness (a cue that does not depend on seeing the green rule) */
+    @media (min-width: 821px) {
+      .turret-step strong { transition: color 250ms ease; }
+      .turret-step:not(.is-active) strong { color: var(--bone-dim); }
+      .turret-step:not(.is-active):hover strong, .turret-step:not(.is-active):focus-visible strong { color: var(--bone); }
+    }
+    /* one shared description under the phone pills (the per-step paragraphs
+       are hidden there); filled by the stepper script */
+    .turret-desc { display: none; }
 
     /* ---------- craft (paper) ---------- */
     .craft { background: var(--paper); color: var(--ink); }
@@ -1312,12 +1400,12 @@
       border-radius: 10px; padding: 1.5rem 1.6rem; min-height: 172px;
     }
     .anatomy__card small {
-      font-family: var(--mono, ui-monospace, monospace); font-size: 0.62rem;
+      font-family: var(--mono, ui-monospace, monospace); font-size: var(--t-micro);
       letter-spacing: 0.16em; color: var(--green); text-transform: uppercase;
     }
     .anatomy__card strong { display: block; font-size: 1.35rem; margin: 0.45rem 0 0.55rem; }
     .anatomy__card p { margin: 0; color: var(--bone-dim); font-size: 0.95rem; line-height: 1.6; }
-    .anatomy__hint { margin-top: 0.9rem; font-size: 0.78rem; color: var(--bone-faint); }
+    .anatomy__hint { margin-top: 0.9rem; font-size: var(--t-small); color: var(--bone-faint); }
     .craft .section-lead { color: #454f4a; }
     .craft h2 { color: var(--ink); }
 
@@ -1329,10 +1417,10 @@
     }
     .craft-note { min-height: 200px; padding: 1.6rem 2rem 1.8rem 0; border-bottom: 1px solid var(--paper-line); }
     .craft-note + .craft-note { border-left: 1px solid var(--paper-line); padding-left: 2rem; }
-    .craft-note span {
+    .craft-note > span {
       color: var(--green-deep);
       font-family: var(--mono);
-      font-size: 0.58rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
@@ -1348,11 +1436,13 @@
 
     /* ---------- hiring band ---------- */
     .hiring {
+      --hiring-pad: clamp(3.5rem, 6.5vw, 5rem);
       position: relative;
       isolation: isolate;
       overflow: hidden;
       border-block: 1px solid var(--line);
-      padding: clamp(4rem, 8vw, 6.5rem) 0;
+      padding: var(--hiring-pad) 0;
+      scroll-margin-top: calc(-1 * var(--hiring-pad));   /* as .section */
     }
     .hiring::before {
       content: "";
@@ -1383,7 +1473,7 @@
       text-transform: uppercase;
     }
     .hiring h2 em { font-style: normal; color: var(--green-bright); }
-    .hiring p { max-width: 520px; margin: 1rem 0 0; color: var(--bone-dim); font-size: 0.95rem; line-height: 1.7; }
+    .hiring__inner p:not(.section-index) { max-width: 520px; margin: 1rem 0 0; color: var(--bone-dim); font-size: 0.95rem; line-height: 1.7; }
 
     /* ---------- contact ---------- */
     .contact__layout {
@@ -1392,6 +1482,7 @@
       gap: clamp(3rem, 8vw, 8rem);
       align-items: start;
     }
+    .contact__layout h2 { font-size: clamp(3.6rem, 5.6vw, 5.2rem); }
     .contact__phone {
       display: block;
       margin-top: 2.4rem;
@@ -1410,7 +1501,7 @@
       margin-bottom: 0.7rem;
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.6rem;
+      font-size: var(--t-micro);
       font-weight: 500;
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -1432,7 +1523,7 @@
     .contact-list small {
       color: var(--green-bright);
       font-family: var(--mono);
-      font-size: 0.54rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
@@ -1440,12 +1531,15 @@
     .contact-list address { grid-template-columns: 86px 1fr; color: var(--bone-dim); }
 
     .quote-form { border-top: 2px solid var(--bone); padding-top: 1.3rem; }
+    /* #quote is the CTA target: the form's top rule lands 24px under the
+       header, the same landing every section gets, with the form in view */
     .quote-form__head {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
       gap: 1rem;
       margin-bottom: 1.8rem;
+      scroll-margin-top: calc(1.3rem + 2px);
     }
     .quote-form__head h3 {
       margin: 0;
@@ -1458,7 +1552,7 @@
     .quote-form__head span {
       color: var(--bone-faint);
       font-family: var(--mono);
-      font-size: 0.54rem;
+      font-size: var(--t-micro);
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
@@ -1470,7 +1564,7 @@
       margin-bottom: 0.5rem;
       color: var(--bone-dim);
       font-family: var(--mono);
-      font-size: 0.56rem;
+      font-size: var(--t-micro-lg);
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -1478,7 +1572,7 @@
     .field input, .field select, .field textarea {
       width: 100%;
       border: 0;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid rgba(233, 231, 222, 0.45);
       border-radius: 0;
       outline: 0;
       background: transparent;
@@ -1487,23 +1581,36 @@
       font-size: 0.92rem;
       transition: border-color 180ms ease, box-shadow 180ms ease;
     }
-    .field input::placeholder, .field textarea::placeholder { color: rgba(233, 231, 222, 0.28); }
+    .field input::placeholder, .field textarea::placeholder { color: rgba(233, 231, 222, 0.55); }
     .field select { color-scheme: dark; }
     .field textarea { min-height: 108px; resize: vertical; }
     .field input:focus, .field select:focus, .field textarea:focus {
       border-color: var(--green-bright);
       box-shadow: 0 2px 0 var(--green-bright);
     }
+    .qf-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
     .form-submit { display: flex; gap: 1.2rem; align-items: center; margin-top: 1.6rem; }
     .form-submit .button { flex: 0 0 auto; }
-    .form-note { max-width: 380px; margin: 0; color: var(--bone-faint); font-size: 0.68rem; line-height: 1.55; }
-    .form-status {
-      min-height: 1.2em;
-      margin: 0.8rem 0 0;
-      color: var(--green-bright);
-      font-family: var(--mono);
-      font-size: 0.64rem;
+    .form-note { max-width: 380px; margin: 0; color: var(--bone-dim); font-size: var(--t-small); line-height: 1.55; }
+    .form-status { min-height: 1.2em; margin: 0.8rem 0 0; font-size: var(--t-small); }
+    /* One note for every outcome. State rides on the rule and a glyph, never
+       on hue alone: neutral = bone rule (the no-endpoint "preview" message),
+       ok = check + green rule, error = "!" + red rule. */
+    .form-status:not(:empty) {
+      margin-top: 1rem;
+      border-left: 2px solid var(--bone);
+      background: rgba(233, 231, 222, 0.05);
+      padding: 0.7rem 0.9rem;
+      color: var(--bone);
+      font-family: var(--sans);
+      line-height: 1.5;
     }
+    .form-status.is-ok { border-color: var(--green-bright); }
+    .form-status.is-ok::before { content: "\2713  "; content: "\2713  " / ""; }
+    .form-status.is-error { border-color: var(--redline); }
+    .form-status.is-error::before { content: "!  "; content: "!  " / ""; font-weight: 700; }
+    /* the status carries the phone number already: drop the duplicate line */
+    [data-quote-form]:has(.form-status:not(:empty)) .form-note { display: none; }
 
     /* ---------- footer ---------- */
     .footer {
@@ -1518,11 +1625,12 @@
       align-items: center;
       min-height: 96px;
       font-family: var(--mono);
-      font-size: 0.57rem;
+      font-size: var(--t-micro-lg);
       letter-spacing: 0.06em;
       line-height: 1.7;
       text-transform: uppercase;
     }
+    .footer__inner > div { text-wrap: balance; }
     .footer__brand {
       display: flex;
       align-items: center;
@@ -1534,7 +1642,7 @@
       letter-spacing: 0.05em;
     }
     .footer__brand img { height: 26px; width: auto; }
-    .footer__tag { color: rgba(47, 208, 127, 0.7); }
+    .footer__tag { color: rgba(47, 208, 127, 0.7); white-space: nowrap; }
 
     .mobile-dock {
       position: fixed;
@@ -1563,12 +1671,12 @@
     }
     .mobile-dock a + a { background: var(--green); color: #04130a; }
 
-    [data-reveal] {
+    .js [data-reveal] {
       opacity: 0;
       transform: translateY(22px);
       transition: opacity 740ms var(--ease), transform 740ms var(--ease);
     }
-    [data-reveal].is-visible { opacity: 1; transform: none; }
+    .js [data-reveal].is-visible { opacity: 1; transform: none; }
 
     /* ---------- scroll-driven upgrades ---------- */
     @supports (animation-timeline: scroll(root)) {
@@ -1592,9 +1700,15 @@
     }
 
     /* ---------- responsive ---------- */
+    /* the tagline grew from 8px to --t-micro; below ~1120px the nav has no
+       room for it (it is already hidden <=980) */
+    @media (max-width: 1120px) {
+      .brand__type span { display: none; }
+    }
     @media (max-width: 1080px) {
       .nav { gap: 1.2rem; }
       .nav__phone { display: none; }
+      .nav__tel { display: inline-flex; }   /* the number folds into an icon */
       .hero__inner { grid-template-columns: 1fr; gap: 3rem; }
       /* Phones get a taller crop of the same photo, so the veil can stay
          light up top and only deepen behind the copy. */
@@ -1603,8 +1717,8 @@
           linear-gradient(to top,
             rgba(10, 12, 13, 0.95) 0%,
             rgba(10, 12, 13, 0.88) 30%,
-            rgba(10, 12, 13, 0.55) 54%,
-            rgba(10, 12, 13, 0.18) 78%,
+            rgba(10, 12, 13, 0.65) 54%,
+            rgba(10, 12, 13, 0.28) 78%,
             rgba(10, 12, 13, 0.24) 100%);
       }
       .hero__inner > div { max-width: none; }
@@ -1616,19 +1730,37 @@
       .work-card--wide { grid-column: span 2; }
       /* 7 cards at two columns leave a lone orphan — let the closer span */
       .work-grid .work-card:last-child { grid-column: span 2; }
+    }
+    /* turret: two columns (sticky stage) down to 821px; below that the stage
+       stacks over the steps, capped so the stepper stays on the first screen */
+    @media (max-width: 820px) {
       .turret__layout { grid-template-columns: 1fr; }
-      .turret__stage { position: relative; top: 0; }
+      .turret__stage { position: relative; top: 0; max-height: 62vh; max-height: 62svh; }
     }
 
-    @media (max-width: 880px) {
+    /* Header + dock: the links need ~970px with the call icon beside the quote
+       button, so the burger and the dock start at 980 (landscape phones up to
+       932px wide stay on the burger instead of wrapping the links). The grid
+       collapses below keep their own 880 breakpoint. */
+    @media (max-width: 980px) {
       :root { --header-h: 66px; }
-      .container { width: min(var(--container), calc(100% - 36px)); }
+      html { scroll-padding-bottom: 96px; }   /* the dock: 54px + its inset */
       .brand__type span { display: none; }
+      .brand__type strong { white-space: nowrap; }
+      /* Two grid items: brand, burger. The links leave the grid (absolute
+         sheet below the bar) and the desktop actions are gone — the dock and
+         the menu's Call row own contact here. */
+      .nav { grid-template-columns: 1fr auto; }
+      .nav__actions { display: none; }
+      .menu-toggle { display: inline-flex; }
       .nav__links {
         position: absolute;
         top: calc(100% + 1px);
         right: 0; left: 0;
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        justify-content: stretch;      /* the base rule centres a 125px column */
+        counter-reset: sheet;
         transform: translateY(-8px);
         visibility: hidden;
         gap: 0;
@@ -1644,10 +1776,76 @@
         opacity: 1;
         pointer-events: auto;
       }
-      .nav__links a { min-height: 56px; display: flex; align-items: center; border-top: 1px solid var(--line); padding: 0 18px; }
+      /* The sheet owns the screen: a scrim from the sheet's foot to the
+         viewport's, so the hero H1 stops competing with the menu. It lives
+         inside the sheet, so it fades on the sheet's own opacity transition;
+         pointer-events none keeps tap-outside-to-close working (the hit
+         lands on the page, outside the header). Absolute, not fixed: the
+         header's backdrop-filter would re-root a fixed child to the header. */
+      .nav__links::before {
+        content: "";
+        position: absolute;
+        top: 100%;
+        right: 0; left: 0;
+        height: calc(100vh - 100% - var(--header-h) - 1px);
+        height: calc(100dvh - 100% - var(--header-h) - 1px);
+        background: rgba(10, 12, 13, 0.6);
+        pointer-events: none;
+      }
+      /* full-width rows, text on the container's edge (half the gutter) */
+      .nav__links a {
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        padding: 0 calc(var(--gutter) / 2);
+        color: var(--bone);   /* touch never hovers: the rows are not captions */
+        font-size: var(--t-micro-lg);
+      }
+      .nav__links a:hover { background: var(--line-soft); }
       .nav__links a::after { display: none; }
-      .nav__actions .button { display: none; }
-      .menu-toggle { display: inline-flex; justify-self: end; }
+      /* the five sections read as the sheet index they are: "01 /" in mono
+         green beside the display face, like every section head on the page */
+      .nav__links a:not(.nav__call) {
+        gap: 0.9rem;
+        font-family: var(--display);
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .nav__links a:not(.nav__call)::before {
+        counter-increment: sheet;
+        content: counter(sheet, decimal-leading-zero) " /";
+        content: counter(sheet, decimal-leading-zero) " /" / "";
+        color: var(--green-bright);
+        font: 500 var(--t-micro) / 1 var(--mono);
+        letter-spacing: 0.12em;
+      }
+      .nav__call {
+        gap: 0.7rem;
+        color: var(--bone);
+        font-variant-numeric: tabular-nums;
+      }
+      .nav__call svg { width: 18px; height: 18px; fill: none; stroke: var(--green-bright); stroke-width: 1.8; stroke-linejoin: round; }
+      .nav__call b { color: var(--green-bright); font-weight: 500; }
+      .footer { padding-bottom: 76px; }
+      /* above the header's stacking level, so the open menu's scrim never
+         dims the primary call to action */
+      .mobile-dock { z-index: 101; display: grid; max-width: 560px; margin-inline: auto; }
+      /* the hero copy is anchored low: clear the dock (54px + inset) */
+      .hero__inner { padding-bottom: calc(1.2rem + 54px + 0.8rem + env(safe-area-inset-bottom, 0px)); }
+    }
+
+    /* The footer's two-column grid squeezes the brand below ~730px (the
+       address grew to --t-micro-lg): stack it before the brand wraps. */
+    @media (max-width: 740px) {
+      .footer__inner { grid-template-columns: 1fr; gap: 0.7rem; padding: 1.3rem 0; }
+    }
+
+    @media (max-width: 880px) {
+      :root { --gutter: 36px; }
       .work__head { grid-template-columns: 1fr; gap: 1.2rem; }
       .craft__notes { grid-template-columns: 1fr; }
       .craft-note { min-height: auto; padding: 1.4rem 0; }
@@ -1662,19 +1860,23 @@
     }
 
     @media (max-width: 600px) {
-      .container { width: min(var(--container), calc(100% - 26px)); }
-      /* 19vw with a 4rem floor made "EVERYTHING." — one unbreakable word,
-         ~4.8x the font size wide — outgrow the container, and .line's
-         overflow:hidden (needed for the reveal) silently cut the tail off,
-         so the hero read "IS EVERYTHIN". Sized so the longest word fits at
-         320px and still fits if the webfont fails and a wider fallback
-         renders. */
-      .hero h1 { font-size: clamp(2.4rem, 15vw, 5.6rem); }
+      :root { --gutter: 26px; --section-pad: 3.25rem; }
+      .hiring { --hiring-pad: 2.75rem; }
+      /* the compare label is a full sentence at this width: let it wrap
+         rather than squeeze its rules to nothing */
+      .dim { display: block; font-size: var(--t-micro); text-wrap: balance; }
+      .dim::before, .dim::after { display: none; }
+      /* First phone screen: the eyebrow reads in one line, and the dock
+         owns Call, so the hero keeps one invitation: the work. */
+      .hero__inner { padding-top: clamp(2rem, 6vh, 4rem); }
+      .eyebrow__long { display: none; }
+      .eyebrow__short { display: inline; }
       .hero__actions { display: grid; grid-template-columns: 1fr; }
       .hero__actions .button { width: 100%; }
+      .hero__actions .button--green { display: none; }
       .stats__grid { grid-template-columns: 1fr 1fr; }
       .stat { padding: 1.2rem 1rem 1.3rem 0; }
-      .stat + .stat { padding-left: 1rem; }
+      .stat:nth-child(even) { padding-left: 1rem; }   /* the right-hand column only; tile 3 starts a new row */
       /* work: a swipe strip instead of nine stacked cards (~3.6 screens → ~1) */
       .work-grid {
         grid-template-columns: none;
@@ -1690,23 +1892,62 @@
       .work-card { scroll-snap-align: center; }
       .work-card--wide, .work-grid .work-card:last-child { grid-column: auto; }
       .work-card img { min-height: 0; height: 235px; }
-      .section h2 { font-size: clamp(3rem, 15vw, 4.6rem); }
       /* sequence: keep two columns — five full-width steps read as filler */
       .seq-rail { grid-template-columns: repeat(2, 1fr); gap: 2rem 1.2rem; }
       /* turret: titles become a 2×2 pill grid; the swipeable stage tells the story */
       .turret__layout > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
       .turret-step, .turret-step:last-of-type { border: 1px solid var(--line); }
-      .turret-step { padding: 0.75rem 0.85rem 0.85rem; }
+      .turret-step { display: flex; flex-direction: column; justify-content: flex-start; padding: 0.75rem 0.85rem 0.85rem; }
       .turret-step p { display: none; }
       .turret-step strong { font-size: 1.28rem; margin-top: 0.3rem; }
-      .compare { aspect-ratio: 4 / 3; }
+      .turret-desc {
+        display: block;
+        grid-column: 1 / -1;
+        min-height: 4.8em;
+        margin: 0.35rem 0 0;
+        padding-left: 0.9rem;
+        border-left: 2px solid var(--green);
+        color: var(--bone-dim);
+        font-size: 0.88rem;
+        line-height: 1.65;
+      }
+      .compare { aspect-ratio: 4 / 3; height: auto; }
+      /* two lines per label: "Site A" over "walls up" never meet mid-photo */
+      .compare__stage { display: block; margin-top: 0.15rem; }
+      .compare__stage::before { content: none; }
+      .compare__label--b { text-align: right; }
+      /* #quote is the dock's destination: title on one line, the answer-time
+         tag under it, like the hero's eyebrow over its H1 */
+      .quote-form__head { flex-direction: column; align-items: flex-start; gap: 0.45rem; }
+      .quote-form__head span { white-space: nowrap; }
       .form-grid { grid-template-columns: 1fr; }
       .field--full { grid-column: auto; }
       .form-submit { display: grid; }
       .form-submit .button { width: 100%; }
-      .footer { padding-bottom: 76px; }
-      .footer__inner { grid-template-columns: 1fr; gap: 0.7rem; padding: 1.3rem 0; }
-      .mobile-dock { display: grid; }
+    }
+
+    /* Landscape phone (844×390 and the like): the hero stops filling the
+       viewport; the lead and the strip step aside (the stats band restates
+       the strip) so the CTA row sits above the dock on the first screen. */
+    @media (max-height: 520px) and (orientation: landscape) and (max-width: 980px) {
+      .hero { min-height: 0; }
+      .hero__inner { padding-top: 1.9rem; }
+      .eyebrow { margin-bottom: 0.9rem; }
+      .hero h1 { font-size: clamp(2.4rem, 13vh, 4.6rem); }
+      .hero__lead, .hero__strip { display: none; }
+      .hero__actions { margin-top: 1rem; }
+      /* the open menu has to fit above the dock: five 44px rows do, and the
+         dock's Call is on the same screen, so the sheet drops its Call row */
+      .nav__links a { min-height: 44px; }
+      .nav__links .nav__call { display: none; }
+    }
+    /* the shortest phones have no air to spare above the dock */
+    @media (max-height: 340px) and (orientation: landscape) and (max-width: 980px) {
+      .hero__inner { padding-top: 1rem; }
+    }
+    /* iPhone SE-class portrait (568px tall): the strip would run under the dock */
+    @media (max-height: 600px) and (orientation: portrait) and (max-width: 600px) {
+      .hero__strip { display: none; }
     }
 
     /* ---------- drafting layer ---------- */
@@ -1732,12 +1973,20 @@
         scroll-behavior: auto !important;
         transition-duration: 0.001ms !important;
       }
-      [data-reveal] { opacity: 1; transform: none; }
+      .js [data-reveal] { opacity: 1; transform: none; }
       .seq-rail::after { animation: none !important; transform: scaleX(1); }
       .rack [data-rack-lean] { transition: none !important; }
       .blueprint text { opacity: 1; transition: none; }
       .hero h1 .line > span { transform: none; animation: none !important; }
       .draft-layer { display: none !important; }
+    }
+
+    /* print / save as PDF: everything revealed, the chrome gone, and the
+       dark ground kept (light type on a dropped background reads as blank) */
+    @media print {
+      html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .js [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+      .site-header, .mobile-dock, .scroll-progress, canvas, dialog, .skip-link { display: none !important; }
     }
   </style>
 </head>
@@ -1756,12 +2005,22 @@
         </span>
       </a>
 
+      <!-- the burger precedes the links it controls, so Tab after opening
+           walks into the menu; it only renders below 981px -->
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-menu" aria-label="Menu" data-menu-toggle>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16" /><path d="M4 16h16" /></svg>
+      </button>
+
       <div class="nav__links" id="primary-menu">
         <a href="#work">The Work</a>
         <a href="#sequence">The Build</a>
         <a href="#craft">The Standard</a>
         <a href="#hiring">Careers</a>
         <a href="#contact">Contact</a>
+        <a class="nav__call" href="tel:+17162089774">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+          <span><b>Call</b> (716) 208-9774</span>
+        </a>
       </div>
 
       <div class="nav__actions">
@@ -1769,10 +2028,10 @@
           <small>Call the office</small>
           (716) 208-9774
         </a>
-        <a class="button button--green" href="#contact"><span>Request a quote</span></a>
-        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-menu" aria-label="Open navigation" data-menu-toggle>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>
-        </button>
+        <a class="nav__tel" href="tel:+17162089774" aria-label="Call (716) 208-9774">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+        </a>
+        <a class="button button--green" href="#quote"><span>Request a quote</span></a>
       </div>
     </nav>
   </header>
@@ -1782,19 +2041,19 @@
       <div class="hero__bg" aria-hidden="true"></div>
       <div class="container hero__inner">
         <div>
-          <p class="eyebrow">Custom home framing · Buffalo &amp; Western New York</p>
+          <p class="eyebrow"><span class="eyebrow__long">Custom home framing · Buffalo &amp; Western New York</span><span class="eyebrow__short">Custom home framing · WNY</span></p>
           <h1 id="hero-title">
             <span class="line"><span>The frame</span></span>
             <span class="line"><span>is <em>everything.</em></span></span>
           </h1>
-          <p class="hero__lead">Every square corner, level floor, and quiet staircase your home will ever have is decided in its first weeks on site. That is the part we build — from flatwork to dry-in.</p>
+          <p class="hero__lead">Every square corner, level floor, and quiet staircase your home will ever have is decided in its first weeks on site. That is the part we build — from flatwork to <span class="nb">dry-in</span>.</p>
           <div class="hero__actions">
             <a class="button button--green" href="tel:+17162089774"><span>Call (716) 208-9774</span></a>
             <a class="button button--line" href="#work"><span>See the work</span></a>
           </div>
           <p class="hero__strip">
-            <span>Framing since 1993</span>
-            <span>Incorporated 2006</span>
+            <span>Established 2006</span>
+            <span>Flatwork to dry-in</span>
             <span>North Tonawanda, NY</span>
           </p>
         </div>
@@ -1805,24 +2064,24 @@
     <div class="stats" aria-label="Company facts">
       <div class="container stats__grid">
         <div class="stat" data-reveal>
-          <small>On frames since '93</small>
-          <strong><span data-years-since="1993">33</span>+</strong>
-          <span>years of framing experience</span>
+          <small>Established 2006</small>
+          <strong><span data-years-since="2006">20</span></strong>
+          <span>years in business, 7 Construction Inc.</span>
         </div>
         <div class="stat" data-reveal>
-          <small>Incorporated</small>
-          <strong>2006</strong>
-          <span>7 Construction Inc. — North Tonawanda</span>
+          <small>Service area</small>
+          <strong>WNY</strong>
+          <span>Buffalo · Niagara · all of Western New York</span>
         </div>
         <div class="stat" data-reveal>
           <small>Scope</small>
-          <strong>FL&rarr;DI</strong>
-          <span>flatwork to dry-in, one crew responsible</span>
+          <strong>FL<svg class="stat__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h19M14 4.5l7.5 7.5-7.5 7.5" /></svg><span class="sr-only"> to </span>DI</strong>
+          <span>flatwork to <span class="nb">dry-in</span>, one crew responsible</span>
         </div>
         <div class="stat" data-reveal>
-          <small>Follow-up</small>
-          <strong>48<span style="font-size:0.5em"> HR</span></strong>
-          <span>quote requests answered in 1–2 business days</span>
+          <small>Response</small>
+          <strong>1–2</strong>
+          <span>business days to hear back</span>
         </div>
       </div>
     </div>
@@ -1888,7 +2147,7 @@
       <div class="container">
         <div data-reveal>
           <p class="section-index">02 / The build</p>
-          <h2 id="sequence-title">Flatwork to dry-in, <em>in order.</em></h2>
+          <h2 id="sequence-title">Flatwork to <span class="nb">dry-in</span>, <em>in order.</em></h2>
           <p class="section-lead">One crew owns the critical path. No waiting on a second sub, no finger-pointing between trades — the schedule holds because the sequence never leaves our hands.</p>
         </div>
 
@@ -1911,26 +2170,25 @@
           <article class="seq-step">
             <span>04 / ROOF</span>
             <h4>Rafters &amp; ridge</h4>
-            <p>Trusses or hand-cut rafters — including the radius work most framers won't touch.</p>
+            <p>Trusses or <span class="nb">hand-cut</span> rafters — including the radius work most framers won't touch.</p>
           </article>
           <article class="seq-step">
             <span>05 / DRY-IN</span>
-            <h4>Weather-tight</h4>
+            <h4><span class="nb">Weather-tight</span></h4>
             <p>Sheathed, papered, and handed off watertight, so the trades behind us start on time.</p>
           </article>
         </div>
 
         <div class="compare-wrap" data-reveal>
-          <p class="dim">Drag to compare — two stages of the build</p>
+          <p class="dim"><span>Two homes, two stages&nbsp;· drag the line<span class="compare__keys"> · or use arrow keys</span></span></p>
           <div class="compare" data-compare>
             <img src="assets/stage-walls.jpg" alt="Home frame with first-floor walls up" loading="lazy" width="960" height="720" />
-            <img class="compare__after" src="assets/stage-roof.jpg" alt="Same style home fully framed with roof on" loading="lazy" width="1280" height="959" />
+            <img class="compare__after" src="assets/stage-roof.jpg" alt="A different custom home, fully framed with the roof on" loading="lazy" width="1280" height="959" />
             <div class="compare__divider" aria-hidden="true"></div>
-            <span class="compare__label compare__label--a">Walls up</span>
-            <span class="compare__label compare__label--b">Ridge set</span>
-            <input class="compare__range" type="range" min="0" max="100" value="50" aria-label="Compare framing stages slider" data-compare-range />
+            <span class="compare__label compare__label--a">Site A<span class="compare__stage">walls up</span></span>
+            <span class="compare__label compare__label--b">Site B<span class="compare__stage">ridge set</span></span>
+            <input class="compare__range" type="range" min="0" max="100" value="50" aria-label="Compare Site A, walls up, with Site B, ridge set" data-compare-range />
           </div>
-          <p class="compare__hint">◂ ▸ Drag the line — or use arrow keys</p>
         </div>
       </div>
     </section>
@@ -1940,17 +2198,17 @@
         <div data-reveal>
           <p class="section-index">03 / Signature work</p>
           <h2 id="turret-title">Anatomy of <em>a turret.</em></h2>
-          <p class="section-lead">Anyone can stack straight walls. Radius framing is where a crew shows its hand — every member in that cone is cut to a different compound angle, on site, by us.</p>
+          <p class="section-lead">Anyone can stack straight walls. Radius framing is where a crew shows its hand: every rafter is laid out full-scale and cut to a compound angle, on site, by us.</p>
         </div>
 
         <div class="turret__layout">
           <div class="turret__stage" data-turret-stage data-reveal>
             <figure>
               <img src="assets/turret-cone.jpg" alt="Turret cone framing from above" class="is-active" width="800" height="600" />
-              <img src="assets/turret-rafters.jpg" alt="Radial turret rafters from inside" loading="lazy" width="960" height="720" />
-              <img src="assets/turret-exterior.jpg" alt="Turret tied into the main structure" loading="lazy" width="1200" height="900" />
-              <img src="assets/turret-ceiling.jpg" alt="Finished turret ceiling with radial framing" loading="lazy" width="960" height="720" />
-              <figcaption data-turret-caption>01 / The cone</figcaption>
+              <img src="assets/turret-rafters.jpg" alt="Radial turret rafters from inside" aria-hidden="true" loading="lazy" width="960" height="720" />
+              <img src="assets/turret-exterior.jpg" alt="Turret tied into the main structure" aria-hidden="true" loading="lazy" width="1200" height="900" />
+              <img src="assets/turret-ceiling.jpg" alt="Inside a turret: radial rafters meeting a center ring, before drywall" aria-hidden="true" loading="lazy" width="960" height="720" />
+              <figcaption data-turret-caption aria-live="polite">01 / Cut the cone</figcaption>
             </figure>
             <div class="stage-nav">
               <button type="button" data-turret-prev aria-label="Previous turret step">←</button>
@@ -1959,26 +2217,27 @@
           </div>
 
           <div data-reveal>
-            <button class="turret-step is-active" type="button" data-turret-step="0">
+            <button class="turret-step is-active" type="button" data-turret-step="0" aria-current="step" aria-label="Step 1, Cut the cone" aria-describedby="turret-d0">
               <small>Step 01</small>
               <strong>Cut the cone</strong>
-              <p>The conical roof starts as a stack of compound-angle cuts — laid out full-scale on the deck before anything goes up.</p>
+              <p id="turret-d0">The conical roof starts as a stack of compound-angle cuts — laid out full-scale on the deck before anything goes up.</p>
             </button>
-            <button class="turret-step" type="button" data-turret-step="1">
+            <button class="turret-step" type="button" data-turret-step="1" aria-label="Step 2, Stack the radials" aria-describedby="turret-d1">
               <small>Step 02</small>
               <strong>Stack the radials</strong>
-              <p>Rafters land around a center ring like spokes. No two members are the same length or angle.</p>
+              <p id="turret-d1">Rafters land around a center ring like spokes. A ring leaves nowhere to hide a bad cut, so every one has to fit.</p>
             </button>
-            <button class="turret-step" type="button" data-turret-step="2">
+            <button class="turret-step" type="button" data-turret-step="2" aria-label="Step 3, Tie it in" aria-describedby="turret-d2">
               <small>Step 03</small>
               <strong>Tie it in</strong>
-              <p>The turret has to meet the main roof planes clean — flashing-ready, with no flat spots and no framing shortcuts.</p>
+              <p id="turret-d2">The turret has to meet the main roof planes clean — flashing-ready, with no flat spots and no framing shortcuts.</p>
             </button>
-            <button class="turret-step" type="button" data-turret-step="3">
+            <button class="turret-step" type="button" data-turret-step="3" aria-label="Step 4, The reveal" aria-describedby="turret-d3">
               <small>Step 04</small>
               <strong>The reveal</strong>
-              <p>What the drywall crew finds when we leave: a ceiling that looks like the inside of a ship's hull.</p>
+              <p id="turret-d3">From inside: a ring with every rafter running to it, and a ceiling the drywall crew can hang straight onto.</p>
             </button>
+            <p class="turret-desc" data-turret-desc>The conical roof starts as a stack of compound-angle cuts — laid out full-scale on the deck before anything goes up.</p>
           </div>
         </div>
       </div>
@@ -2005,7 +2264,7 @@
           </article>
           <article class="craft-note">
             <span>03 / Schedule</span>
-            <h3>Dried-in fast</h3>
+            <h3><span class="nb">Dried-in</span> fast</h3>
             <p>A tight, well-sequenced frame gets the build watertight sooner. Fewer weather days, faster trades behind us.</p>
           </article>
         </div>
@@ -2160,7 +2419,7 @@
         <div data-reveal>
           <p class="section-index">06 / Careers</p>
           <h2 id="hiring-title">Framers <em>wanted.</em></h2>
-          <p>Join one of WNY's most respected framing crews. Experience welcome, work ethic required — we'll get back to you within two business days.</p>
+          <p>Join one of WNY's most respected framing crews. Experience welcome, work ethic required.</p>
         </div>
         <a class="button button--green" href="https://7const.com/apply/" target="_blank" rel="noreferrer" data-reveal><span>Apply to the crew</span></a>
       </div>
@@ -2190,8 +2449,13 @@
           </div>
         </div>
 
-        <form class="quote-form" data-quote-form data-reveal>
-          <div class="quote-form__head">
+        <!-- no data-reveal: a CTA scrolls straight here, and a form that
+             fades in from 10% visible reads as an empty strip -->
+        <!-- LAUNCH: add action="https://formspree.io/f/XXXXXXXX" here and the same
+             URL as FORM_ENDPOINT in the script. method="post" keeps a no-script
+             submit from putting a lead's name and number in the address bar. -->
+        <form class="quote-form" method="post" data-quote-form>
+          <div class="quote-form__head" id="quote">
             <h3>Request a quote</h3>
             <span>Answered in 1–2 business days</span>
           </div>
@@ -2224,11 +2488,17 @@
             </div>
           </div>
 
+          <!-- honeypot: invisible to people, bots fill it; the script drops those submits -->
+          <div class="qf-trap" aria-hidden="true">
+            <label>Leave this empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
+          </div>
+
           <div class="form-submit">
             <button class="button button--green" type="submit"><span>Send request</span></button>
-            <p class="form-note">Prefer the phone? So do we — (716) 208-9774. Either way, you'll hear back within two business days.</p>
+            <p class="form-note">Prefer the phone? So do we — (716) 208-9774.</p>
           </div>
-          <p class="form-status" aria-live="polite" data-form-status></p>
+          <p class="form-status" role="status" aria-live="polite" data-form-status></p>
+          <noscript><p class="form-note">This preview needs JavaScript to send. Call (716) 208-9774 and mention your project.</p></noscript>
         </form>
       </div>
     </section>
@@ -2249,7 +2519,7 @@
 
   <div class="mobile-dock" aria-label="Quick contact">
     <a href="tel:+17162089774">Call now</a>
-    <a href="#contact">Request a quote</a>
+    <a href="#quote">Request a quote</a>
   </div>
 
   <dialog class="lightbox" data-lightbox-dialog aria-label="Project photo viewer">
@@ -2319,18 +2589,36 @@
       }, { passive: true });
 
       /* menu */
-      menuButton.addEventListener("click", function () {
-        var isOpen = header.classList.toggle("menu-open");
-        menuButton.setAttribute("aria-expanded", String(isOpen));
-        menuButton.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
-      });
+      var menuOpenY = 0;
+      function menuIsOpen() { return header.classList.contains("menu-open"); }
+      function setMenu(open) {
+        header.classList.toggle("menu-open", open);
+        menuButton.setAttribute("aria-expanded", String(open));
+        if (open) menuOpenY = window.scrollY;
+      }
+      menuButton.addEventListener("click", function () { setMenu(!menuIsOpen()); });
       menuLinks.forEach(function (link) {
-        link.addEventListener("click", function () {
-          header.classList.remove("menu-open");
-          menuButton.setAttribute("aria-expanded", "false");
-          menuButton.setAttribute("aria-label", "Open navigation");
-        });
+        link.addEventListener("click", function () { setMenu(false); });
       });
+      /* it also closes like a sheet should: Esc (focus back on the burger),
+         a tap anywhere outside the bar, a real scroll, or the layout growing
+         past the burger breakpoint while it is open */
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && menuIsOpen()) {
+          setMenu(false);
+          menuButton.focus();
+        }
+      });
+      document.addEventListener("pointerdown", function (event) {
+        if (menuIsOpen() && !header.contains(event.target)) setMenu(false);
+      });
+      window.addEventListener("scroll", function () {
+        if (menuIsOpen() && Math.abs(window.scrollY - menuOpenY) > 80) setMenu(false);
+      }, { passive: true });
+      var burgerGone = window.matchMedia("(min-width: 981px)");
+      function onBurgerGone(event) { if (event.matches) setMenu(false); }
+      if (burgerGone.addEventListener) burgerGone.addEventListener("change", onBurgerGone);
+      else burgerGone.addListener(onBurgerGone);
 
       /* reveals */
       if (!reducedMotion && "IntersectionObserver" in window) {
@@ -2528,8 +2816,23 @@
         var range = box.querySelector("[data-compare-range]");
         function setPos(value) {
           box.style.setProperty("--pos", value + "%");
+          var v = Math.round(value);
+          range.setAttribute("aria-valuetext", v >= 97 ? "Site A, walls up, fully shown"
+            : v <= 3 ? "Site B, ridge set, fully shown"
+            : "Site A, walls up, " + v + " percent; Site B, ridge set, " + (100 - v) + " percent");
         }
         range.addEventListener("input", function () { setPos(range.value); });
+        /* a swipe that starts on the photo and turns into a page scroll
+           cancels the pointer: put the divider back where it was */
+        var held = null;
+        range.addEventListener("pointerdown", function () { held = range.value; });
+        range.addEventListener("pointerup", function () { held = null; });
+        range.addEventListener("pointercancel", function () {
+          if (held === null) return;
+          range.value = held;
+          setPos(held);
+          held = null;
+        });
         function fromPointer(event) {
           var rect = box.getBoundingClientRect();
           var x = (event.clientX - rect.left) / rect.width;
@@ -2558,25 +2861,43 @@
         if (!stage) return;
         var imgs = Array.prototype.slice.call(stage.querySelectorAll("img"));
         var caption = stage.querySelector("[data-turret-caption]");
+        var desc = document.querySelector("[data-turret-desc]");
         var steps = Array.prototype.slice.call(document.querySelectorAll("[data-turret-step]"));
-        var captions = ["01 / The cone", "02 / Radials", "03 / Tie-in", "04 / The reveal"];
+        /* the caption and the phone description are read off the step buttons,
+           so the stage can never name a step differently from its button */
+        var captions = steps.map(function (step, i) {
+          return "0" + (i + 1) + " / " + step.querySelector("strong").textContent.trim();
+        });
+        var texts = steps.map(function (step) { return step.querySelector("p").textContent.trim(); });
         var current = 0;
         function activate(index) {
           current = index;
-          imgs.forEach(function (img, i) { img.classList.toggle("is-active", i === index); });
-          steps.forEach(function (step, i) { step.classList.toggle("is-active", i === index); });
-          caption.textContent = captions[index];
+          imgs.forEach(function (img, i) {
+            img.classList.toggle("is-active", i === index);
+            if (i === index) img.removeAttribute("aria-hidden"); else img.setAttribute("aria-hidden", "true");
+          });
+          steps.forEach(function (step, i) {
+            step.classList.toggle("is-active", i === index);
+            if (i === index) step.setAttribute("aria-current", "step"); else step.removeAttribute("aria-current");
+          });
+          if (caption.textContent !== captions[index]) caption.textContent = captions[index];
+          if (desc && desc.textContent !== texts[index]) desc.textContent = texts[index];
         }
         var lastManual = 0;
-        function manualStep(delta) {
+        function manual(index) {
           lastManual = Date.now();
-          activate((current + delta + steps.length) % steps.length);
+          activate(index);
         }
+        function manualStep(delta) { manual((current + delta + steps.length) % steps.length); }
         steps.forEach(function (step, i) {
-          step.addEventListener("click", function () {
-            lastManual = Date.now();
-            activate(i);
-          });
+          step.addEventListener("click", function () { manual(i); });
+          /* keyboard focus is a manual choice: Tab to Step 01 must show Step 01 */
+          step.addEventListener("focus", function () { manual(i); });
+        });
+        stage.addEventListener("keydown", function (event) {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault();
+          manualStep(event.key === "ArrowRight" ? 1 : -1);
         });
         document.querySelector("[data-turret-prev]").addEventListener("click", function () { manualStep(-1); });
         document.querySelector("[data-turret-next]").addEventListener("click", function () { manualStep(1); });
@@ -2594,16 +2915,48 @@
           swipeStartX = null;
           if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy)) manualStep(dx < 0 ? 1 : -1);
         });
-        var stickyLayout = window.matchMedia("(min-width: 1081px)").matches;
-        if (stickyLayout && !reducedMotion && "IntersectionObserver" in window) {
-          var stepObserver = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-              if (entry.isIntersecting && Date.now() - lastManual > 2500) {
-                activate(steps.indexOf(entry.target));
-              }
+        /* scroll-spy while the stage is sticky (two columns, 821px up). The
+           observer is always registered and checks the width when it fires, so
+           a rotate or resize needs no reload. Events that land inside the
+           2.5s manual lockout are not dropped: one sync runs when it ends and
+           reads the step under the reading band at that moment. */
+        var wide = window.matchMedia("(min-width: 821px)");
+        if (!reducedMotion && "IntersectionObserver" in window) {
+          var syncTimer = 0;
+          var readingStep = function () {
+            var vh = window.innerHeight, mid = vh * 0.45, best = -1, bestDist = Infinity;
+            steps.forEach(function (step, i) {
+              var rect = step.getBoundingClientRect();
+              if (rect.bottom < vh * 0.35 || rect.top > vh * 0.55) return;
+              var dist = Math.abs((rect.top + rect.bottom) / 2 - mid);
+              if (dist < bestDist) { bestDist = dist; best = i; }
             });
+            return best;
+          };
+          var sync = function () {
+            syncTimer = 0;
+            if (!wide.matches) return;
+            var wait = 2500 - (Date.now() - lastManual);
+            if (wait > 0) { syncTimer = setTimeout(sync, wait + 40); return; }
+            var held = document.activeElement;
+            if (steps.indexOf(held) > -1 && held.matches(":focus-visible")) return;   /* keyboard has the step */
+            var next = readingStep();
+            if (next > -1 && next !== current) activate(next);
+          };
+          var stepObserver = new IntersectionObserver(function (entries) {
+            if (!wide.matches || syncTimer) return;
+            if (entries.some(function (entry) { return entry.isIntersecting; })) sync();
           }, { rootMargin: "-35% 0px -45% 0px", threshold: 0.01 });
           steps.forEach(function (step) { stepObserver.observe(step); });
+          /* The observer only fires as a step ENTERS the band, so on its own
+             the stage runs one step behind and the last step never lands.
+             Scrolling re-reads the step under the band once per frame. */
+          var spyTick = false;
+          window.addEventListener("scroll", function () {
+            if (spyTick || syncTimer || !wide.matches) return;
+            spyTick = true;
+            requestAnimationFrame(function () { spyTick = false; sync(); });
+          }, { passive: true });
         }
       })();
 
@@ -3097,11 +3450,20 @@
 
       var form = document.querySelector("[data-quote-form]");
       var status = document.querySelector("[data-form-status]");
+      /* one writer for the status line: kind sets the rule + glyph (ok / error,
+         neutral otherwise); reveal brings it above the dock on phones */
+      function say(message, kind, reveal) {
+        status.textContent = message;
+        status.classList.toggle("is-ok", kind === "ok");
+        status.classList.toggle("is-error", kind === "error");
+        if (reveal) status.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
+      }
       form.addEventListener("submit", function (event) {
         event.preventDefault();
+        if (form.elements["_gotcha"].value) return;   /* a bot filled the trap */
         if (!form.checkValidity()) {
-          form.reportValidity();
-          status.textContent = "Please complete the required fields.";
+          form.reportValidity();   /* focuses the first bad field: do not scroll away from it */
+          say("Please complete the required fields.", "error", false);
           return;
         }
         var payload = {
@@ -3112,7 +3474,7 @@
           message: document.getElementById("q-message").value.trim()
         };
         if (FORM_ENDPOINT) {
-          status.textContent = "Sending…";
+          say("Sending…", "", true);
           fetch(FORM_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -3120,13 +3482,13 @@
           }).then(function (response) {
             if (!response.ok) throw new Error("send-failed");
             form.reset();
-            status.textContent = "Request sent — the office will follow up within two business days.";
+            say("Request sent — expect to hear back in 1–2 business days.", "ok", true);
           }).catch(function () {
-            status.textContent = "Could not send right now — please call (716) 208-9774.";
+            say("Could not send right now — please call (716) 208-9774.", "error", true);
           });
           return;
         }
-        status.textContent = "Preview build: the form goes live at launch — for now, call (716) 208-9774 and mention your project.";
+        say("This preview does not send yet. Call (716) 208-9774 and mention your project.", "", true);
       });
 
       document.querySelector("[data-year]").textContent = String(new Date().getFullYear());
